@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>پزشک و مشاور – دیجی‌کالا سلامت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ───────────────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+img{display:block;max-width:100%}
+button{border:none;background:none;cursor:pointer;font:inherit}
+
+/* ── ROOT ────────────────────────────────────────────────── */
+:root{
+  --teal:#0098b0;--teal-lt:#e5f3f5;--teal-border:#bfdfe5;--teal-dk:#008299;
+  --green:#24a565;--green-lt:#e7f6f0;--green-dk:#058c53;
+  --page-bg:#fff;
+  --text-dark:#0a0a0a;--text-mid:#2e3638;--text-muted:#798486;
+  --card-bg:#f7f7f7;
+  --font:'Vazirmatn',system-ui,sans-serif;
+}
+
+html,body{
+  width:100%;height:100%;
+  font-family:var(--font);
+  background:#ededf0;
+  overflow:hidden;
+}
+
+/* ── PHONE SHELL ─────────────────────────────────────────── */
+#shell{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+}
+#phone{
+  position:relative;
+  width:360px;height:100%;max-height:780px;
+  background:var(--page-bg);
+  border-radius:32px;
+  overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.06);
+  display:flex;flex-direction:column;
+}
+
+/* ── APP BAR ─────────────────────────────────────────────── */
+.app-bar{
+  flex-shrink:0;
+  height:56px;background:#fff;
+  display:flex;flex-direction:row;align-items:center;
+  padding:0 20px;gap:20px;
+}
+.app-bar-back{
+  flex-shrink:0;width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+}
+.app-bar-back img{width:24px;height:24px;object-fit:contain}
+.app-bar-title{
+  flex:1;font-size:16px;font-weight:700;color:var(--text-dark);
+  text-align:right;line-height:1.4;
+}
+.app-bar-spacer{flex-shrink:0;width:24px}
+
+/* ── SCROLLABLE ──────────────────────────────────────────── */
+#scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#scroll::-webkit-scrollbar{display:none}
+
+/* ── SEARCH ──────────────────────────────────────────────── */
+.search-wrap{
+  padding:16px 16px 0;background:#fff;
+}
+.search-bar{
+  display:flex;flex-direction:row;align-items:center;
+  gap:8px;
+  background:#f5f5f5;
+  border-radius:12px;
+  padding:10px 12px;
+  direction:rtl;
+}
+.search-bar img{width:24px;height:24px;object-fit:contain;flex-shrink:0;opacity:.5}
+.search-placeholder{
+  flex:1;font-size:14px;font-weight:400;color:var(--text-muted);
+  text-align:right;line-height:28px;
+}
+
+/* ── CATEGORY CHIPS ROW ──────────────────────────────────── */
+.chips-row{
+  display:flex;flex-direction:row;
+  gap:8px;padding:12px 16px;
+  overflow-x:auto;scrollbar-width:none;
+  background:#fff;
+  -webkit-overflow-scrolling:touch;
+  direction:rtl; /* first chip (selected) on the right */
+}
+.chips-row::-webkit-scrollbar{display:none}
+
+.chip{
+  flex-shrink:0;
+  display:flex;flex-direction:row;align-items:center;
+  gap:8px;
+  background:var(--card-bg);
+  border-radius:8px;
+  padding:8px 8px 8px 16px; /* physical: 8px right side (icon side), 16px left side (text side) */
+  height:40px;
+  cursor:pointer;
+}
+/* In RTL flex row: icon is leftmost in DOM order, appears on the right visually (flex-end in RTL) */
+/* But we want icon on the right, label on the left in the chip */
+/* So: chip is direction:ltr internally, icon first, label second */
+.chip{direction:ltr}
+.chip-selected{
+  background:var(--teal-lt);
+  border:1px solid var(--teal);
+  box-shadow:0 4px 4px rgba(0,130,153,.08);
+}
+.chip-icon{width:24px;height:24px;object-fit:contain;flex-shrink:0}
+.chip-label{
+  font-size:11px;font-weight:400;color:var(--text-dark);
+  line-height:18px;white-space:nowrap;
+}
+.chip-selected .chip-label{font-weight:700}
+
+/* ── SORT BAR ────────────────────────────────────────────── */
+.sort-bar{
+  display:flex;flex-direction:row;align-items:center;
+  gap:16px;padding:8px 16px;
+  background:#fff;
+  border-bottom:1px solid #f2f2f2;
+  direction:rtl; /* chips on the right, label on the left */
+}
+.sort-chips-scroll{
+  display:flex;flex-direction:row;align-items:center;
+  gap:16px;
+  flex:1;min-width:0;
+  overflow-x:auto;scrollbar-width:none;
+  direction:rtl; /* selected chip ("مناسب شما") rightmost */
+  -webkit-overflow-scrolling:touch;
+}
+.sort-chips-scroll::-webkit-scrollbar{display:none}
+.sort-chip{
+  flex-shrink:0;
+  font-size:11px;font-weight:400;color:var(--text-mid);
+  white-space:nowrap;cursor:pointer;
+  padding:2px 0;line-height:18px;
+}
+.sort-chip-selected{
+  border:1px solid #ff5b7d;
+  border-radius:10px;
+  padding:2px 8px;
+  font-weight:500;
+}
+.sort-label{
+  flex-shrink:0;
+  font-size:11px;font-weight:400;color:var(--text-muted);
+  white-space:nowrap;
+}
+
+/* ── DOCTOR LIST ─────────────────────────────────────────── */
+.dr-list{
+  background:#fff;
+  padding:16px 16px 140px; /* bottom: room for FAB + bottom nav */
+  display:flex;flex-direction:column;
+  gap:12px;
+}
+
+/* ── DR CARD WRAP ────────────────────────────────────────── */
+.dr-card-wrap{
+  position:relative;
+  height:142px;          /* matches Figma swipe bg height */
+  border-radius:16px;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+/* ── SWIPE BACKGROUNDS ───────────────────────────────────── */
+.swipe-bg{
+  position:absolute;inset:0;
+  border-radius:16px;
+  display:flex;align-items:center;
+  direction:ltr; /* physical layout, isolate from RTL page */
+  z-index:0;
+}
+/* Teal: calendar/in-person — revealed when card drags RIGHT */
+.swipe-bg-right{
+  background:#0098b0;
+  justify-content:flex-start;
+  padding-left:32px;
+}
+/* Green: phone/online — revealed when card drags LEFT */
+.swipe-bg-left{
+  background:#24a565;
+  justify-content:flex-end;
+  padding-right:32px;
+}
+.swipe-bg-inner{
+  display:flex;flex-direction:column;align-items:center;
+  gap:4px;width:90px;
+}
+.swipe-bg-icon{width:48px;height:48px;object-fit:contain;flex-shrink:0}
+.swipe-bg-title{
+  font-size:10px;font-weight:600;line-height:16px;
+  color:#fff;text-align:center;direction:rtl;
+}
+.swipe-bg-sub{
+  font-size:10px;font-weight:400;line-height:16px;
+  color:rgba(255,255,255,.70);text-align:center;direction:rtl;
+}
+.swipe-bg-price{
+  font-size:11px;font-weight:500;line-height:18px;
+  color:#fff;text-align:center;direction:rtl;
+}
+.swipe-bg-price-strike{
+  font-size:10px;font-weight:400;line-height:16px;
+  color:rgba(255,255,255,.54);text-align:center;direction:rtl;
+  text-decoration:line-through;
+}
+
+/* ── DRAGGABLE DOCTOR CARD ───────────────────────────────── */
+.dr-card{
+  position:absolute;inset:0;
+  z-index:2;
+  background:var(--card-bg);
+  border-radius:16px;
+  box-shadow:0 1px 2px rgba(0,0,0,.12);
+  display:flex;flex-direction:row;align-items:flex-start;
+  padding:16px 16px 12px 8px; /* physical: top right bottom left */
+  gap:10px;
+  touch-action:pan-y;
+  will-change:transform;
+  cursor:grab;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  direction:rtl; /* photo (first child) on the RIGHT */
+}
+.dr-card.snapping{
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.dr-card.flying{
+  transition:transform .28s ease-in;
+}
+.dr-card:active{cursor:grabbing}
+
+/* ── DOCTOR PHOTO AREA (rightmost in RTL) ────────────────── */
+.dr-photo-area{
+  flex-shrink:0;
+  position:relative;
+  width:56px;
+  padding-bottom:14px; /* room for the active badge below photo */
+}
+.dr-photo-circle{
+  width:56px;height:56px;
+  border-radius:50%;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.8);
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  background:#d9d9d9;
+}
+.dr-photo-circle img{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.dr-active-badge{
+  position:absolute;bottom:0;left:50%;
+  transform:translateX(-50%);
+  background:var(--green-lt);
+  border:1px solid var(--green);
+  border-radius:100px;
+  padding:1px 6px;
+  font-size:10px;font-weight:600;color:var(--green-dk);
+  white-space:nowrap;
+  z-index:3;
+  direction:rtl;
+}
+
+/* ── DOCTOR INFO (left of photo in RTL) ──────────────────── */
+.dr-info{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;
+  align-items:flex-end; /* right-align all children in RTL */
+  direction:rtl;
+}
+.dr-name{
+  font-size:12px;font-weight:700;color:var(--text-mid);
+  line-height:20px;text-align:right;width:100%;
+}
+.dr-spec{
+  font-size:11px;font-weight:400;color:var(--text-mid);
+  line-height:18px;text-align:right;width:100%;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.dr-meta{
+  display:flex;flex-direction:row;align-items:center;
+  gap:6px;padding:12px 0 10px;
+  direction:rtl;
+}
+.dr-meta-text{
+  font-size:10px;font-weight:400;color:var(--text-muted);
+  white-space:nowrap;
+}
+.dr-meta-text strong{font-weight:700;color:var(--text-mid)}
+.dr-meta-dot{
+  width:2px;height:2px;
+  background:#efefef;border-radius:50%;flex-shrink:0;
+}
+
+/* ── E-PRESCRIPTION BADGE ────────────────────────────────── */
+.dr-rx-wrap{
+  display:flex;flex-direction:row;align-items:center;
+  gap:8px;flex-shrink:0;
+  background:var(--teal-lt);
+  border:1px solid var(--teal-border);
+  border-radius:1000px;
+  padding:4px 4px 4px 8px; /* physical: top right bottom left */
+  direction:ltr; /* keep logos in physical order */
+}
+.dr-rx-text{
+  font-size:10px;font-weight:400;color:var(--text-mid);
+  white-space:nowrap;direction:rtl;
+}
+.dr-rx-logos{
+  display:flex;flex-direction:row;align-items:center;
+}
+.dr-rx-logo{
+  width:16px;height:16px;
+  border-radius:50%;
+  border:.4px solid #fff;
+  overflow:hidden;
+  margin-right:-4px; /* overlap to the left (physical left in LTR logos row) */
+  flex-shrink:0;
+  box-shadow:0 1px .5px rgba(0,0,0,.14);
+  display:flex;align-items:center;justify-content:center;
+  padding:2px;
+}
+.dr-rx-logo:first-child{margin-right:0}
+.dr-rx-logo img{width:100%;height:100%;object-fit:contain;display:block}
+.dr-rx-logo-dk-blue{background:#1f538d}
+.dr-rx-logo-navy{background:#19395c}
+.dr-rx-logo-white{background:#fff}
+
+/* ── FAB ─────────────────────────────────────────────────── */
+.fab{
+  position:absolute;
+  bottom:90px;
+  left:50%;transform:translateX(-50%);
+  z-index:30;
+  display:flex;flex-direction:row;align-items:center;
+  gap:8px;
+  background:var(--teal-dk);
+  border-radius:24px;
+  padding:0 20px;
+  height:48px;
+  white-space:nowrap;
+  cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,130,153,.35);
+  direction:rtl;
+}
+.fab-label{
+  font-size:14px;font-weight:600;color:#fff;
+  line-height:24px;
+}
+.fab-icon{
+  width:24px;height:24px;object-fit:contain;flex-shrink:0;
+}
+.fab-icon img{
+  width:100%;height:100%;object-fit:contain;
+  filter:brightness(0) invert(1);
+}
+
+/* ── BOTTOM NAV ──────────────────────────────────────────── */
+.bottom-nav{
+  flex-shrink:0;
+  height:82px;background:#fff;
+  border-top:1px solid rgba(0,0,0,.05);
+  display:flex;align-items:flex-start;justify-content:space-around;
+  padding-top:10px;
+}
+.bnav-item{
+  display:flex;flex-direction:column;align-items:center;
+  gap:2px;padding:0 8px;flex:1;
+  opacity:.45;cursor:pointer;
+}
+.bnav-item.active{opacity:1}
+.bnav-item img{width:24px;height:24px;object-fit:contain}
+.bnav-item svg{width:24px;height:24px}
+.bnav-label{
+  font-size:12px;font-weight:500;color:var(--text-muted);
+  line-height:28px;
+}
+.bnav-item.active .bnav-label{color:var(--teal-dk)}
+.bnav-item.active svg{color:var(--teal-dk)}
+.home-pill{
+  width:72px;height:4px;background:#111;
+  border-radius:4px;margin:4px auto 0;
+}
+
+/* ── BOTTOM-SHEET MODAL (reservation / e-visit) ──────────── */
+.sheet-scrim{position:absolute;inset:0;z-index:50;background:rgba(10,10,10,.45);opacity:0;pointer-events:none;transition:opacity .28s ease}
+.sheet-scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:51;background:#fff;border-radius:24px 24px 0 0;display:flex;flex-direction:column;max-height:88%;transform:translateY(101%);transition:transform .34s cubic-bezier(.22,1,.36,1)}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{display:flex;justify-content:center;padding-top:12px;flex-shrink:0}
+.sheet-handle span{width:40px;height:4px;background:#e0e0e0;border-radius:8px}
+.sheet-header{flex-shrink:0;height:64px;display:flex;flex-direction:row;align-items:center;gap:8px;padding:0 16px}
+.sheet-title{flex:1;min-width:0;font-size:16px;font-weight:700;color:#0a0a0a;text-align:right;line-height:28px}
+.sheet-back,.sheet-close{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:#0a0a0a;cursor:pointer}
+.sheet-back{display:none}
+.sheet[data-step="2"] .sheet-back{display:flex}
+.sheet-body{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:8px}
+.sheet-body::-webkit-scrollbar{display:none}
+.sheet-footer{flex-shrink:0;border-top:1px solid #efefef;padding:8px 16px;background:#fff}
+.sheet-cta{width:100%;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;cursor:pointer}
+.sheet[data-flow="reservation"] .sheet-cta{background:#008299}
+.sheet[data-flow="evisit"] .sheet-cta{background:#05985a}
+.sheet-home{width:72px;height:4px;background:#09090a;border-radius:8px;margin:8px auto 2px}
+.day-row{display:flex;flex-direction:row;gap:8px;padding:0 16px 4px;overflow-x:auto;scrollbar-width:none;direction:rtl}
+.day-row::-webkit-scrollbar{display:none}
+.day-chip{flex-shrink:0;width:90px;background:#fff;border:1px solid #f7f7f7;border-radius:8px;padding:12px 8px 8px;display:flex;flex-direction:column;gap:8px;align-items:center;cursor:pointer}
+.day-chip-name{font-size:14px;font-weight:600;color:#2e3638;text-align:center;width:100%}
+.day-chip-date{font-size:12px;font-weight:500;color:#2e3638;text-align:center;width:100%}
+.day-chip.sel{background:#e5f3f5;border-color:#008299}
+.ts-list{padding:16px 16px 0}
+.ts-row{display:flex;flex-direction:row;align-items:center;gap:8px;padding:16px 0;cursor:pointer;border-bottom:1px solid #efefef}
+.ts-row:last-child{border-bottom:none}
+.ts-radio,.vt-radio{flex-shrink:0;width:18px;height:18px;border-radius:50%;border:1px solid #d4d6d7;box-sizing:border-box}
+.ts-row.sel .ts-radio,.vt-row.sel .vt-radio{border:5px solid #008299}
+.ts-label{flex:1;min-width:0;font-size:12px;font-weight:600;color:#2e3638;text-align:right;line-height:20px}
+.vt-list{padding:16px 16px 0}
+.vt-row{display:flex;flex-direction:row;align-items:center;gap:8px;padding:16px 0;cursor:pointer;border-bottom:1px solid #efefef}
+.vt-row:last-child{border-bottom:none}
+.vt-title{flex:1;min-width:0;font-size:12px;font-weight:600;color:#2e3638;text-align:right;line-height:20px}
+.vt-price{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;direction:rtl}
+.vt-price-now{font-size:11px;font-weight:700;color:#2e3638;line-height:18px;white-space:nowrap}
+.vt-price-old{font-size:10px;font-weight:400;color:#b3b9ba;line-height:16px;text-decoration:line-through;white-space:nowrap}
+
+
+/* ── FILTER MODAL ────────────────────────────────────────── */
+.filter-body{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0 16px 8px}
+.filter-body::-webkit-scrollbar{display:none}
+.fsec{display:flex;flex-direction:column;gap:12px;padding-top:16px}
+.fsec-head{display:flex;flex-direction:row;align-items:center;gap:12px;cursor:pointer}
+.fsec-title{flex:1;min-width:0;font-size:12px;font-weight:500;color:#2e3638;text-align:right;line-height:20px}
+.fsec-chev{flex-shrink:0;width:14px;height:14px;color:#798486;display:flex;align-items:center;justify-content:center;transition:transform .25s}
+.fsec.collapsed .fsec-chev{transform:rotate(180deg)}
+.fsec.collapsed .fsearch,.fsec.collapsed .fcheck-list{display:none}
+.fsearch{display:flex;flex-direction:row;align-items:center;gap:8px;background:#f3f3f3;border-radius:24px;height:40px;padding:0 12px 0 15px}
+.fsearch-ph{flex:1;min-width:0;font-size:11px;font-weight:500;color:#798486;text-align:right;line-height:18px}
+.fsearch-icon{flex-shrink:0;width:16px;height:16px;color:#798486;display:flex;align-items:center;justify-content:center}
+.fcheck-list{display:flex;flex-direction:column;gap:12px;max-height:96px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#d4d6d7 transparent;padding-left:8px}
+.fcheck-list::-webkit-scrollbar{width:4px}
+.fcheck-list::-webkit-scrollbar-thumb{background:#d4d6d7;border-radius:2px}
+.fcheck-list::-webkit-scrollbar-track{background:transparent}
+.fcheck{display:flex;flex-direction:row;align-items:center;gap:8px;cursor:pointer;flex-shrink:0}
+.fcheck-label{flex:1;min-width:0;font-size:12px;font-weight:500;color:#2e3638;text-align:right;line-height:20px}
+.fcheck-box{flex-shrink:0;width:24px;height:24px;border-radius:6px;border:1px solid #d4d6d7;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.fcheck.on .fcheck-box{background:#008299;border-color:#008299}
+.fcheck-box svg{display:none}
+.fcheck.on .fcheck-box svg{display:block}
+.fdivider{height:1px;background:#efefef;margin-top:16px}
+.ftoggle-row{display:flex;flex-direction:row;align-items:center;gap:12px;padding-top:16px;cursor:pointer}
+.ftoggle-label{flex:1;min-width:0;font-size:12px;font-weight:500;color:#2e3638;text-align:right;line-height:20px}
+.ftoggle{flex-shrink:0;width:40px;height:20px;border-radius:20px;background:#9da5a6;padding:4px;display:flex;align-items:center;box-sizing:border-box;direction:ltr;transition:background .22s}
+.ftoggle-knob{width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .22s}
+.ftoggle.on{background:#008299}
+.ftoggle.on .ftoggle-knob{transform:translateX(20px)}
+
+</style>
+</head>
+<body>
+
+<div id="shell">
+<div id="phone">
+
+  <!-- APP BAR — RTL: first child (icon) on the right -->
+  <div class="app-bar">
+    <div class="app-bar-back" style="cursor:pointer" onclick="history.back()">
+      <img src="assets/da1cb1be-37b2-476b-92ac-047a82b64ab5.svg" alt="بازگشت"
+           onerror="this.outerHTML='<svg width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\'><polyline points=\'9 18 15 12 9 6\'/></svg>'">
+    </div>
+    <h1 class="app-bar-title">پزشک و مشاور</h1>
+    <div class="app-bar-spacer"></div>
+  </div>
+
+  <!-- SCROLLABLE CONTENT -->
+  <div id="scroll">
+
+    <!-- SEARCH BAR -->
+    <div class="search-wrap">
+      <div class="search-bar">
+        <img src="assets/3ef8566c-c588-4699-b290-4c1f560b9c0d.svg" alt=""
+             onerror="this.outerHTML='<svg width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#aaa\' stroke-width=\'2\'><circle cx=\'11\' cy=\'11\' r=\'8\'/><path d=\'m21 21-4.35-4.35\'/></svg>'">
+        <span class="search-placeholder">جستجوی بیماری، علائم، پزشک یا تخصص...</span>
+      </div>
+    </div>
+
+    <!-- CATEGORY CHIPS — RTL: selected chip on the right -->
+    <div class="chips-row">
+      <div class="chip chip-selected">
+        <img class="chip-icon" src="assets/33be882f-df5c-49df-b595-94d687ae8ceb.png" alt=""
+             onerror="this.style.display='none'">
+        <span class="chip-label">دندانپزشکی</span>
+      </div>
+      <div class="chip">
+        <img class="chip-icon" src="assets/e934c913-29ee-448f-bff5-e8aec62c6dd7.png" alt=""
+             onerror="this.style.display='none'">
+        <span class="chip-label">روانپزشکی</span>
+      </div>
+      <div class="chip">
+        <img class="chip-icon" src="assets/9725bf3a-37be-4d2e-9abf-9541b3d90040.png" alt=""
+             onerror="this.style.display='none'">
+        <span class="chip-label">ارتوپدی</span>
+      </div>
+      <div class="chip">
+        <img class="chip-icon" src="assets/a0f01b80-1788-48ca-a465-c83303d7209e.png" alt=""
+             onerror="this.style.display='none'">
+        <span class="chip-label">قلب و عروق</span>
+      </div>
+      <div class="chip">
+        <img class="chip-icon" src="assets/a0f01b80-1788-48ca-a465-c83303d7209e.png" alt=""
+             onerror="this.style.display='none'">
+        <span class="chip-label">زنان</span>
+      </div>
+    </div>
+
+    <!-- SORT BAR — RTL: chips on right, label on left -->
+    <div class="sort-bar">
+      <div class="sort-chips-scroll">
+        <div class="sort-chip sort-chip-selected">مناسب شما</div>
+        <div class="sort-chip">پیشنهاد کاربران</div>
+        <div class="sort-chip">بیشتری تجربه</div>
+        <div class="sort-chip">بالاترین امتیاز</div>
+      </div>
+      <span class="sort-label">مرتب‌سازی بر اساس</span>
+    </div>
+
+    <!-- DOCTOR LIST (populated by JS) -->
+    <div class="dr-list" id="dr-list"></div>
+
+  </div><!-- /scroll -->
+
+  <!-- FAB — position:absolute inside phone -->
+  <div class="fab" id="fab">
+    <span class="fab-label">فیلتر پزشکان</span>
+    <div class="fab-icon">
+      <img src="assets/b0b87457-6594-4590-b339-13b43fe79c53.svg" alt=""
+           onerror="this.outerHTML='<svg width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><line x1=\'4\' y1=\'6\' x2=\'20\' y2=\'6\'/><line x1=\'8\' y1=\'12\' x2=\'16\' y2=\'12\'/><line x1=\'11\' y1=\'18\' x2=\'13\' y2=\'18\'/></svg>'">
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV — RTL: first item = right side -->
+  <nav class="bottom-nav">
+    <!-- Profile (rightmost in RTL = first child) -->
+    <div class="bnav-item">
+      <img src="assets/200acddb-98ec-4f33-951e-c6c7d5d16de7.svg" alt=""
+           onerror="this.outerHTML='<svg width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><path d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'/><circle cx=\'12\' cy=\'7\' r=\'4\'/></svg>'">
+      <span class="bnav-label">حساب کاربری</span>
+    </div>
+    <!-- Orders -->
+    <div class="bnav-item">
+      <img src="assets/e078d9c0-dce3-4ad7-8d9b-0bc9768d13f7.svg" alt=""
+           onerror="this.outerHTML='<svg width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><path d=\'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z\'/><line x1=\'3\' x2=\'21\' y1=\'6\' y2=\'6\'/><path d=\'M16 10a4 4 0 0 1-8 0\'/></svg>'">
+      <span class="bnav-label">سفارش‌ها</span>
+    </div>
+    <!-- Home (active, leftmost in RTL = last child) -->
+    <div class="bnav-item active">
+      <svg viewBox="0 0 24 24" fill="currentColor" color="#008299">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+      </svg>
+      <span class="bnav-label">خانه</span>
+    </div>
+  </nav>
+
+
+  <!-- BOTTOM-SHEET MODAL (reservation / e-visit) -->
+  <div class="sheet-scrim" id="sheetScrim"></div>
+  <div class="sheet" id="sheet" data-flow="reservation" data-step="1">
+    <div class="sheet-handle"><span></span></div>
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="sheetTitle">انتخاب زمان رزرو وقت حضوری</h2>
+      <button class="sheet-back" id="sheetBack" aria-label="مرحله قبل">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+      <button class="sheet-close" id="sheetClose" aria-label="بستن">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+    <div class="sheet-footer">
+      <button class="sheet-cta" id="sheetCta">مرحله بعد</button>
+      <div class="sheet-home"></div>
+    </div>
+  </div>
+
+
+  <!-- FILTER MODAL -->
+  <div class="sheet-scrim" id="filterScrim"></div>
+  <div class="sheet" id="filterSheet" data-flow="reservation">
+    <div class="sheet-handle"><span></span></div>
+    <div class="sheet-header">
+      <h2 class="sheet-title">فیلترها</h2>
+      <button class="sheet-close" id="filterClose" aria-label="بستن">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="filter-body" id="filterBody">
+
+      <!-- Section: insurance -->
+      <div class="fsec">
+        <div class="fsec-head">
+          <span class="fsec-title">بیمه‌های تحت پوشش</span>
+          <span class="fsec-chev"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg></span>
+        </div>
+        <div class="fsearch">
+          <span class="fsearch-ph">جستجوی بیمه</span>
+          <span class="fsearch-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+        </div>
+        <div class="fcheck-list" data-group="insurance">
+          <div class="fcheck on"><span class="fcheck-label">نیروهای مسلح</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+          <div class="fcheck on"><span class="fcheck-label">نیروهای غیر مسلح</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+          <div class="fcheck"><span class="fcheck-label">تامین اجتماعی</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+          <div class="fcheck"><span class="fcheck-label">تامین سلامت</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+          <div class="fcheck"><span class="fcheck-label">کارکنان بانک ملی</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+        </div>
+      </div>
+
+      <div class="fdivider"></div>
+
+      <!-- Section: city -->
+      <div class="fsec">
+        <div class="fsec-head">
+          <span class="fsec-title">شهر</span>
+          <span class="fsec-chev"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg></span>
+        </div>
+        <div class="fsearch">
+          <span class="fsearch-ph">جستجو شهر یا استان</span>
+          <span class="fsearch-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+        </div>
+        <div class="fcheck-list" data-group="city">
+          <div class="fcheck on"><span class="fcheck-label">تهران</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+          <div class="fcheck on"><span class="fcheck-label">کرج</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+          <div class="fcheck"><span class="fcheck-label">اصفهان</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+          <div class="fcheck"><span class="fcheck-label">شیراز</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+          <div class="fcheck"><span class="fcheck-label">مشهد</span><span class="fcheck-box"><svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8 11 1"/></svg></span></div>
+        </div>
+      </div>
+
+      <div class="fdivider"></div>
+
+      <!-- Toggle rows -->
+      <div class="ftoggle-row">
+        <span class="ftoggle-label">پزشکان آنلاین و ویزیت فوری</span>
+        <span class="ftoggle"><span class="ftoggle-knob"></span></span>
+      </div>
+      <div class="fdivider"></div>
+      <div class="ftoggle-row">
+        <span class="ftoggle-label">فقط پزشکان با قابلیت رزرو وقت مطب</span>
+        <span class="ftoggle on"><span class="ftoggle-knob"></span></span>
+      </div>
+
+    </div>
+    <div class="sheet-footer">
+      <button class="sheet-cta" id="filterApply">اعمال فیلتر</button>
+      <div class="sheet-home"></div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+</div><!-- /shell -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ASSETS
+═══════════════════════════════════════════════════════════ */
+const BASE = 'assets/'; /* assets localized */
+const CALENDAR_ICON = 'assets/bf3b17e1-9b3d-4568-9a70-d6df042242e4.svg';
+const PHONE_ICON    = 'assets/5258168d-9027-4ccb-97f7-028bc24b3105.svg';
+const DR_PHOTO      = 'assets/8768aff9-5c4f-47dc-8c2d-eae02a9f08e3.jpg';
+const RX_LOGO_1     = 'assets/66fa19e0-c6de-4ecd-a403-e1345f127cb0.svg';
+const RX_LOGO_2     = 'assets/14682d78-ff34-425b-b9ec-26ce9d15b5be.png';
+const RX_LOGO_3     = 'assets/1be8e4fc-8fdc-491b-92ee-ae1fe928a28e.svg';
+const RX_LOGO_4     = 'assets/3d6a9557-6082-455e-8910-f44471124c93.svg';
+
+/* ═══════════════════════════════════════════════════════════
+   DOCTOR DATA
+═══════════════════════════════════════════════════════════ */
+const DOCTORS = [
+  {
+    name: 'دکتر کمال کامیابی نیا',
+    spec: 'متخصص اعصاب و روان، فلوشیب انگل شناسی',
+    rating: '۴٫۵', reviews: '۳۴۲۷', exp: '۱۶',
+    active: true,
+    price: '۳۲۰٬۰۰۰', priceOld: '۴۰۰٬۰۰۰',
+    date: '۲۵ مرداد ۱۴۰۵',
+  },
+  {
+    name: 'دکتر سارا رضایی',
+    spec: 'متخصص قلب و عروق و اکوکاردیوگرافی',
+    rating: '۴٫۸', reviews: '۱۲۸۱', exp: '۱۲',
+    active: true,
+    price: '۲۸۰٬۰۰۰', priceOld: '۳۵۰٬۰۰۰',
+    date: '۲۷ مرداد ۱۴۰۵',
+  },
+  {
+    name: 'دکتر علی محمدی',
+    spec: 'دندانپزشک ترمیمی، ایمپلنت و اورتودنسی',
+    rating: '۴٫۹', reviews: '۵۶۱۱', exp: '۲۰',
+    active: false,
+    price: '۴۵۰٬۰۰۰', priceOld: '۵۵۰٬۰۰۰',
+    date: '۳۰ مرداد ۱۴۰۵',
+  },
+  {
+    name: 'دکتر مریم احمدی',
+    spec: 'متخصص کودکان و نوزادان، فوق تخصص',
+    rating: '۴٫۷', reviews: '۸۹۴', exp: '۹',
+    active: true,
+    price: '۲۴۰٬۰۰۰', priceOld: '۳۰۰٬۰۰۰',
+    date: '۲۸ مرداد ۱۴۰۵',
+  },
+  {
+    name: 'دکتر رضا موسوی',
+    spec: 'روانپزشک، فلوشیپ اعتیاد و اضطراب',
+    rating: '۴٫۶', reviews: '۲۱۳۵', exp: '۱۴',
+    active: true,
+    price: '۳۰۰٬۰۰۰', priceOld: '۳۸۰٬۰۰۰',
+    date: '۲۶ مرداد ۱۴۰۵',
+  },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   SWIPE CONSTANTS (same as plp.html)
+═══════════════════════════════════════════════════════════ */
+const SNAP_DIST   = 120;
+const SNAP_THRESH =  60;
+const FULL_THRESH =  80;
+
+/* ═══════════════════════════════════════════════════════════
+   BUILD DOCTOR CARD
+═══════════════════════════════════════════════════════════ */
+function buildDrCard(doc) {
+  const wrap = document.createElement('div');
+  wrap.className = 'dr-card-wrap';
+
+  const activeBadgeHtml = doc.active
+    ? `<span class="dr-active-badge">فعال</span>`
+    : `<span class="dr-active-badge" style="border-color:#aaa;background:#f5f5f5;color:#798486">غیرفعال</span>`;
+
+  wrap.innerHTML = `
+    <!-- Teal background: calendar / in-person (revealed on swipe RIGHT) -->
+    <div class="swipe-bg swipe-bg-right">
+      <div class="swipe-bg-inner">
+        <img class="swipe-bg-icon" src="${CALENDAR_ICON}" alt=""
+             onerror="this.outerHTML='<svg class=\'swipe-bg-icon\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><rect x=\'3\' y=\'4\' width=\'18\' height=\'18\' rx=\'2\'/><line x1=\'16\' y1=\'2\' x2=\'16\' y2=\'6\'/><line x1=\'8\' y1=\'2\' x2=\'8\' y2=\'6\'/><line x1=\'3\' y1=\'10\' x2=\'21\' y2=\'10\'/></svg>'">
+        <span class="swipe-bg-title">رزرو وقت حضوری</span>
+        <span class="swipe-bg-sub">اولین وقت آزاد</span>
+        <span class="swipe-bg-price">${doc.date}</span>
+      </div>
+    </div>
+
+    <!-- Green background: phone / online visit (revealed on swipe LEFT) -->
+    <div class="swipe-bg swipe-bg-left">
+      <div class="swipe-bg-inner">
+        <img class="swipe-bg-icon" src="${PHONE_ICON}" alt=""
+             onerror="this.outerHTML='<svg class=\'swipe-bg-icon\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><path d=\'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.38 2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z\'/></svg>'">
+        <span class="swipe-bg-title">ویزیت آنلاین فوری</span>
+        <span class="swipe-bg-price">${doc.price} تومان</span>
+        <span class="swipe-bg-price-strike">${doc.priceOld} تومان</span>
+      </div>
+    </div>
+
+    <!-- Draggable card (direction:rtl → photo on the right) -->
+    <div class="dr-card">
+      <!-- Photo area: first child = RIGHT in RTL flex -->
+      <div class="dr-photo-area">
+        <div class="dr-photo-circle">
+          <img src="${DR_PHOTO}" alt="${doc.name}" loading="lazy"
+               onerror="this.style.background='#e0e0e0'">
+        </div>
+        ${activeBadgeHtml}
+      </div>
+
+      <!-- Info area: second child = LEFT in RTL flex -->
+      <div class="dr-info">
+        <p class="dr-name">${doc.name}</p>
+        <p class="dr-spec">${doc.spec}</p>
+        <div class="dr-meta">
+          <span class="dr-meta-text">⭐️ <strong>${doc.rating}</strong> (${doc.reviews}+)</span>
+          <div class="dr-meta-dot"></div>
+          <span class="dr-meta-text">💼 <strong>${doc.exp}</strong> سال تجربه</span>
+        </div>
+        <div class="dr-rx-wrap">
+          <span class="dr-rx-text">نسخه الکترونیک</span>
+          <div class="dr-rx-logos">
+            <div class="dr-rx-logo dr-rx-logo-white">
+              <img src="${RX_LOGO_4}" alt="" loading="lazy" onerror="this.style.display='none'">
+            </div>
+            <div class="dr-rx-logo dr-rx-logo-navy">
+              <img src="${RX_LOGO_3}" alt="" loading="lazy" onerror="this.style.display='none'">
+            </div>
+            <div class="dr-rx-logo dr-rx-logo-dk-blue">
+              <img src="${RX_LOGO_2}" alt="" loading="lazy" onerror="this.style.display='none'">
+            </div>
+            <div class="dr-rx-logo" style="background:#f0f0f0">
+              <img src="${RX_LOGO_1}" alt="" loading="lazy" onerror="this.style.display='none'">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  attachSwipe(wrap.querySelector('.dr-card'));
+  return wrap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SWIPE LOGIC (reused from plp.html pattern)
+═══════════════════════════════════════════════════════════ */
+function attachSwipe(card) {
+  const wrap    = card.parentElement;
+  const bgLeft  = wrap.querySelector('.swipe-bg-left');   /* green: online visit  */
+  const bgRight = wrap.querySelector('.swipe-bg-right');  /* teal: in-person      */
+  let startX = 0, dragging = false, snapped = 0;
+
+  function flyOff(dir) {
+    /* state 2 — full swipe: left→green→e-visit, right→teal→reservation */
+    openSheet(dir < 0 ? 'evisit' : 'reservation');
+    card.classList.remove('snapping');
+    card.classList.add('flying');
+    card.style.transform = `translateX(${dir * (window.innerWidth + 60)}px)`;
+    bgLeft.style.zIndex  = 0;
+    bgRight.style.zIndex = 0;
+    setTimeout(() => {
+      card.classList.remove('flying');
+      card.style.transition = 'none';
+      card.style.transform  = 'translateX(0)';
+      snapped = 0;
+      requestAnimationFrame(() => { card.style.transition = ''; });
+    }, 300);
+  }
+
+  card.addEventListener('pointerdown', e => {
+    startX = e.clientX;
+    dragging = true;
+    card.setPointerCapture(e.pointerId);
+    card.classList.remove('snapping', 'flying');
+  });
+
+  card.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const rawDx = e.clientX - startX;
+    const dx    = rawDx + snapped;
+    const sameAsSnap = snapped !== 0 && ((snapped < 0 && rawDx < 0) || (snapped > 0 && rawDx > 0));
+    const limit  = sameAsSnap ? window.innerWidth : SNAP_DIST + 10;
+    const clamped = Math.max(-limit, Math.min(limit, dx));
+    card.style.transform = `translateX(${clamped}px)`;
+    /* negative dx (left drag) → reveal green phone bg */
+    bgLeft.style.zIndex  = clamped < 0 ? 1 : 0;
+    /* positive dx (right drag) → reveal teal calendar bg */
+    bgRight.style.zIndex = clamped > 0 ? 1 : 0;
+  });
+
+  card.addEventListener('pointerup', e => {
+    if (!dragging) return;
+    dragging = false;
+    const dx = e.clientX - startX;
+
+    /* normal tap on a resting card → open the doctor detail page */
+    if (snapped === 0 && Math.abs(dx) < 8) { location.href = 'dr-detail.html'; return; }
+
+    card.classList.add('snapping');
+
+    if (snapped !== 0) {
+      const sameDir = (snapped < 0 && dx < 0) || (snapped > 0 && dx > 0);
+      if (sameDir && Math.abs(dx) >= FULL_THRESH) {
+        flyOff(snapped < 0 ? -1 : 1);
+        return;
+      }
+      if (!sameDir || Math.abs(dx) < 8) snapped = 0;
+    } else {
+      if      (dx < -SNAP_THRESH) snapped = -SNAP_DIST;
+      else if (dx >  SNAP_THRESH) snapped =  SNAP_DIST;
+      else                        snapped = 0;
+    }
+    card.style.transform = `translateX(${snapped}px)`;
+    if (snapped === 0) {
+      bgLeft.style.zIndex  = 0;
+      bgRight.style.zIndex = 0;
+    }
+  });
+
+  /* state 1 — tap the revealed under-layer to trigger its action */
+  function snapBack(){ snapped = 0; card.classList.add('snapping'); card.style.transform = 'translateX(0)'; bgLeft.style.zIndex = 0; bgRight.style.zIndex = 0; }
+  bgLeft.addEventListener('click',  () => { openSheet('evisit');      snapBack(); });
+  bgRight.addEventListener('click', () => { openSheet('reservation'); snapBack(); });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+const list = document.getElementById('dr-list');
+DOCTORS.forEach(doc => list.appendChild(buildDrCard(doc)));
+
+/* ═══════════════════════════════════════════════════════════
+   BOTTOM-SHEET MODAL (reservation / e-visit)
+   openSheet('reservation') — teal flow (time picker) → payment.html?type=reservation
+   openSheet('evisit')      — green flow (visit type → time picker) → payment.html?type=evisit
+═══════════════════════════════════════════════════════════ */
+const SHEET_DAYS = [['شنبه','۲۰ تیر'],['یکشنبه','۲۱ تیر'],['دوشنبه','۲۲ تیر'],['سه‌شنبه','۲۳ تیر'],['چهارشنبه','۲۴ تیر'],['پنجشنبه','۲۵ تیر'],['جمعه','۲۶ تیر']];
+const SHEET_SLOTS = ['۰۹:۰۰ تا ۰۹:۳۰','۰۹:۳۰ تا ۱۰:۰۰','۱۰:۰۰ تا ۱۰:۳۰','۱۰:۳۰ تا ۱۱:۰۰','۱۱:۰۰ تا ۱۱:۳۰','۱۱:۳۰ تا ۱۲:۰۰','۱۶:۰۰ تا ۱۶:۳۰','۱۶:۳۰ تا ۱۷:۰۰'];
+const SHEET_VISITS = ['ویزیت آنلاین فوری','ویزیت آنلاین در زمان تعیین شده','مشاوره متنی','ویزیت تصویری'];
+function sheetRenderTime(){
+  const days=SHEET_DAYS.map((d,i)=>`<div class="day-chip${i===1?' sel':''}" data-day="${i}"><span class="day-chip-name">${d[0]}</span><span class="day-chip-date">${d[1]}</span></div>`).join('');
+  const slots=SHEET_SLOTS.map((s,i)=>`<div class="ts-row${i===0?' sel':''}" data-slot="${i}"><span class="ts-radio"></span><span class="ts-label">ساعت ${s}</span></div>`).join('');
+  return `<div class="day-row">${days}</div><div class="ts-list">${slots}</div>`;
+}
+function sheetRenderVisits(){
+  return `<div class="vt-list">${SHEET_VISITS.map((t,i)=>`<div class="vt-row${i===0?' sel':''}" data-visit="${i}"><span class="vt-radio"></span><span class="vt-title">${t}</span><div class="vt-price"><span class="vt-price-now">۱۹۸٬۰۰۰ تومان</span><span class="vt-price-old">۳۲۱٬۰۰۰ تومان</span></div></div>`).join('')}</div>`;
+}
+const _sheet = document.getElementById('sheet');
+const _scrim = document.getElementById('sheetScrim');
+const _sheetBody = document.getElementById('sheetBody');
+const _sheetTitle = document.getElementById('sheetTitle');
+let _sheetFlow = 'reservation', _sheetStep = 1;
+function _renderSheet(){
+  _sheet.dataset.flow = _sheetFlow; _sheet.dataset.step = _sheetStep;
+  if(_sheetFlow === 'reservation'){ _sheetTitle.textContent = 'انتخاب زمان رزرو وقت حضوری'; _sheetBody.innerHTML = sheetRenderTime(); }
+  else { _sheetTitle.textContent = 'انتخاب نوع ویزیت آنلاین'; _sheetBody.innerHTML = _sheetStep === 1 ? sheetRenderVisits() : sheetRenderTime(); }
+  _sheetBody.scrollTop = 0;
+}
+function openSheet(flow){ _sheetFlow = flow; _sheetStep = 1; _renderSheet(); _scrim.classList.add('open'); _sheet.classList.add('open'); }
+function closeSheet(){ _scrim.classList.remove('open'); _sheet.classList.remove('open'); }
+function _sheetNext(){
+  if(_sheetFlow === 'reservation'){ location.href = 'payment.html?type=reservation'; }
+  else if(_sheetStep === 1){ _sheetStep = 2; _renderSheet(); }
+  else { location.href = 'payment.html?type=evisit'; }
+}
+function _sheetBackStep(){ if(_sheetStep === 2){ _sheetStep = 1; _renderSheet(); } }
+_sheetBody.addEventListener('click', e => {
+  const day = e.target.closest('.day-chip'), slot = e.target.closest('.ts-row'), vis = e.target.closest('.vt-row');
+  if(day){ _sheetBody.querySelectorAll('.day-chip').forEach(x=>x.classList.remove('sel')); day.classList.add('sel'); }
+  if(slot){ _sheetBody.querySelectorAll('.ts-row').forEach(x=>x.classList.remove('sel')); slot.classList.add('sel'); }
+  if(vis){ _sheetBody.querySelectorAll('.vt-row').forEach(x=>x.classList.remove('sel')); vis.classList.add('sel'); }
+});
+document.getElementById('sheetCta').addEventListener('click', _sheetNext);
+document.getElementById('sheetClose').addEventListener('click', closeSheet);
+document.getElementById('sheetBack').addEventListener('click', _sheetBackStep);
+_scrim.addEventListener('click', closeSheet);
+
+
+/* ═══════════════════════════════════════════════════════════
+   FILTER MODAL — opened by the "فیلتر پزشکان" FAB
+═══════════════════════════════════════════════════════════ */
+const filterScrim = document.getElementById('filterScrim');
+const filterSheet = document.getElementById('filterSheet');
+function openFilter(){ filterScrim.classList.add('open'); filterSheet.classList.add('open'); }
+function closeFilter(){ filterScrim.classList.remove('open'); filterSheet.classList.remove('open'); }
+filterScrim.addEventListener('click', closeFilter);
+document.getElementById('filterClose').addEventListener('click', closeFilter);
+document.getElementById('filterApply').addEventListener('click', closeFilter);
+/* checkbox toggle */
+filterSheet.querySelectorAll('.fcheck').forEach(c => c.addEventListener('click', () => c.classList.toggle('on')));
+/* switch toggle (tap row or the pill) */
+filterSheet.querySelectorAll('.ftoggle-row').forEach(r => r.addEventListener('click', () => r.querySelector('.ftoggle').classList.toggle('on')));
+/* collapsible sections */
+filterSheet.querySelectorAll('.fsec-head').forEach(h => h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed')));
+/* open from FAB */
+const fabEl = document.getElementById('fab');
+if (fabEl) fabEl.addEventListener('click', openFilter);
+
+</script>
+</body>
+</html>

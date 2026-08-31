@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>دکتر کمال کامیابی نیا – دیجی‌کالا سلامت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ───────────────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+img{display:block;max-width:100%}
+button{border:none;background:none;cursor:pointer;font:inherit}
+
+/* ── ROOT (tokens from Figma variables) ──────────────────── */
+:root{
+  --teal:#0098b0;--teal-600:#008299;--teal-50:#e5f3f5;
+  --green:#24a565;--green-cta:#05985a;--green-800:#058c53;--green-50:#e7f6f0;
+  --heading:#0c0c0c;--primary:#2e3638;--secondary:#798486;--tertiary:#b3b9ba;
+  --subtle:#efefef;--card:#f7f7f7;--icon:#424750;
+  --page-bg:#fff;
+  --font:'Vazirmatn',system-ui,sans-serif;
+}
+
+html,body{
+  width:100%;height:100%;
+  font-family:var(--font);
+  background:#ededf0;
+  overflow:hidden;
+}
+
+/* ── PHONE SHELL ─────────────────────────────────────────── */
+#shell{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#phone{
+  position:relative;
+  width:360px;height:100%;max-height:780px;
+  background:var(--page-bg);
+  border-radius:32px;
+  overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.06);
+  display:flex;flex-direction:column;
+}
+
+/* ── APP BAR (fixed, 56px) ───────────────────────────────── */
+.app-bar{
+  flex-shrink:0;
+  height:56px;background:#fff;
+  display:flex;flex-direction:row;align-items:center;
+  padding:0 20px;gap:20px;
+  z-index:40;
+  position:relative;
+}
+.app-bar-back{
+  flex-shrink:0;width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;color:var(--icon);
+}
+.app-bar-title{
+  flex:1;min-width:0;
+  font-size:16px;font-weight:600;color:var(--heading);
+  text-align:right;line-height:28px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  opacity:0;transform:translateY(4px);
+  transition:opacity .25s ease,transform .25s ease;
+  pointer-events:none;
+}
+.app-bar-title.show{opacity:1;transform:translateY(0)}
+.app-bar-spacer{flex-shrink:0;width:24px}
+
+/* ── SCROLLABLE ──────────────────────────────────────────── */
+#scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  background:#fff;
+}
+#scroll::-webkit-scrollbar{display:none}
+
+/* ── DOCTOR PROFILE HEAD ─────────────────────────────────── */
+.profile{
+  padding:40px 16px 0;
+  display:flex;flex-direction:column;align-items:center;
+}
+.profile-photo-wrap{position:relative;width:104px;height:104px;margin-bottom:6px}
+.profile-photo{
+  width:104px;height:104px;border-radius:50%;
+  overflow:hidden;background:#d9d9d9;
+  border:1px solid #fff;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.profile-photo img{width:100%;height:100%;object-fit:cover}
+.profile-badge{
+  position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+  background:var(--green-50);border:1px solid var(--green);
+  border-radius:100px;padding:0 6px;height:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:600;color:var(--green-800);
+  white-space:nowrap;
+}
+.profile-name{
+  font-size:16px;font-weight:700;color:var(--heading);
+  line-height:24px;text-align:center;margin-top:10px;
+}
+.profile-spec{
+  font-size:12px;font-weight:400;color:var(--secondary);
+  line-height:18px;text-align:center;
+}
+
+/* ── META ROW (medical system • rating • experience) ─────── */
+.meta-row{
+  display:flex;flex-direction:row;align-items:center;justify-content:center;
+  flex-wrap:wrap;gap:8px;padding-top:8px;
+}
+.meta-item{
+  font-size:10px;font-weight:400;color:var(--secondary);
+  line-height:16px;white-space:nowrap;
+}
+.meta-dot{width:2px;height:2px;background:var(--subtle);border-radius:50%;flex-shrink:0}
+
+/* ── INSURANCE / E-RX PILLS ──────────────────────────────── */
+.ins-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:8px 0 16px;
+}
+.ins-row{
+  display:flex;flex-direction:row;align-items:center;justify-content:center;
+  flex-wrap:wrap;gap:4px;padding:0 16px;
+}
+.ins-pill{
+  display:inline-flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;
+  padding:1px 8px;border-radius:999px;border:.4px solid #fff;
+  box-shadow:0 1px .5px rgba(0,0,0,.14);
+  font-size:10px;font-weight:400;line-height:16px;white-space:nowrap;
+}
+.ins-pill img{height:11.5px;width:auto;object-fit:contain;display:block;flex-shrink:0}
+.ins-pill-navy{background:#1f538d;color:#fff}
+.ins-pill-darknavy{background:#19395c;color:#fff}
+.ins-pill-mint{background:var(--teal-50);color:#006c80}
+.ins-pill-gold{background:#ffd391;color:var(--primary)}
+.ins-pill-white{background:#fff;color:var(--primary);box-shadow:0 1px 2px rgba(0,0,0,.10)}
+
+/* ── COMMENT PREVIEW CARDS (horizontal scroll) ───────────── */
+.comments-row{
+  display:flex;flex-direction:row;gap:8px;
+  padding:8px 16px;
+  overflow-x:auto;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  direction:rtl;
+}
+.comments-row::-webkit-scrollbar{display:none}
+.comment-card{
+  flex-shrink:0;width:178px;
+  background:var(--card);border-radius:16px;padding:16px;
+  display:flex;flex-direction:column;
+}
+.comment-text{
+  font-size:11px;font-weight:400;color:var(--primary);
+  line-height:18px;text-align:right;width:100%;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;height:37px;
+}
+.comment-foot{
+  display:flex;flex-direction:row;align-items:center;justify-content:flex-end;
+  gap:6px;padding-top:16px;width:100%;
+  direction:ltr; /* group sits on the right, stars left / date right — matches Figma */
+}
+.comment-stars{font-size:10px;line-height:16px;white-space:nowrap}
+.comment-date{font-size:10px;font-weight:400;color:var(--secondary);line-height:16px;white-space:nowrap}
+.comment-dot{width:2px;height:2px;background:var(--subtle);border-radius:50%;flex-shrink:0}
+
+/* ── SECTION TITLE ROW ───────────────────────────────────── */
+.sec-title{
+  display:flex;flex-direction:row;align-items:center;
+  gap:8px;padding:16px 16px 0;
+}
+.sec-title-text{
+  flex:1;min-width:0;
+  font-size:12px;font-weight:600;color:var(--primary);
+  line-height:20px;text-align:right;
+}
+.sec-title-icon{flex-shrink:0;width:24px;height:24px;color:var(--secondary);display:flex;align-items:center;justify-content:center}
+
+/* ── ABOUT ───────────────────────────────────────────────── */
+.about{padding:8px 16px 0}
+.about-box{
+  background:var(--card);border-radius:16px;padding:16px;
+  display:flex;flex-direction:column;align-items:flex-end;
+}
+.about-text{
+  font-size:12px;font-weight:400;color:var(--primary);
+  line-height:20px;text-align:right;width:100%;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.about-more{
+  font-size:11px;font-weight:700;color:var(--teal);
+  line-height:18px;margin-top:4px;cursor:pointer;
+}
+
+/* ── CTA MASTER (two big buttons) ────────────────────────── */
+.cta-master{
+  display:flex;flex-direction:column;gap:8px;padding:16px;
+}
+.cta-btn{
+  display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  border-radius:12px;
+  padding:10px 12px 10px 14px; /* physical: py10, pr12, pl14 */
+  overflow:hidden;cursor:pointer;
+  direction:ltr; /* price on the left, label+icon on the right (icon rightmost) — matches Figma */
+}
+.cta-btn-green{background:var(--green-cta)}
+.cta-btn-teal{background:var(--teal-600)}
+.cta-price{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;color:#fff}
+.cta-price-now{font-size:11px;font-weight:700;line-height:18px;white-space:nowrap}
+.cta-price-old{
+  font-size:10px;font-weight:400;line-height:16px;
+  text-decoration:line-through;opacity:.54;white-space:nowrap;
+}
+.cta-right{display:flex;flex-direction:row;align-items:center;gap:8px;flex-shrink:0}
+.cta-labels{display:flex;flex-direction:column;align-items:flex-end;color:#fff;white-space:nowrap}
+.cta-title{font-size:12px;font-weight:700;line-height:20px;text-align:center}
+.cta-sub{font-size:10px;font-weight:400;line-height:16px;text-align:right}
+.cta-icon{width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff}
+.cta-price-now,.cta-price-old,.cta-title,.cta-sub{direction:rtl} /* keep Persian text shaping inside the LTR button */
+
+/* ── REVIEWS ─────────────────────────────────────────────── */
+.reviews-head{
+  display:flex;flex-direction:row;align-items:center;
+  padding:16px 16px 0;gap:8px;
+}
+.reviews-source{
+  display:flex;flex-direction:row;align-items:center;gap:4px;
+  flex-shrink:0;
+  font-size:11px;font-weight:400;color:var(--secondary);line-height:18px;
+}
+.reviews-source-logo{height:12px;width:auto;display:block;flex-shrink:0}
+.reviews-title{
+  flex:1;min-width:0;
+  font-size:12px;font-weight:600;color:var(--primary);
+  line-height:20px;text-align:left;
+}
+.reviews-bot{flex-shrink:0;width:14px;height:14px;color:var(--secondary)}
+.reviews-list{padding:0 16px 24px}
+.review{padding:16px 0;border-bottom:1px solid var(--subtle)}
+.review:last-child{border-bottom:none}
+.review-meta{
+  display:flex;flex-direction:row;align-items:center;justify-content:flex-end;
+  gap:6px;margin-bottom:12px;
+  direction:ltr; /* group sits on the right, stars left / date right — matches Figma */
+}
+.review-stars{font-size:10px;line-height:16px;white-space:nowrap}
+.review-date{font-size:10px;font-weight:400;color:var(--secondary);line-height:16px;white-space:nowrap}
+.review-dot{width:2px;height:2px;background:var(--subtle);border-radius:50%;flex-shrink:0}
+.review-text{
+  font-size:12px;font-weight:400;color:var(--primary);
+  line-height:20px;text-align:right;
+}
+
+/* ── CTA SHORTCUT (bottom fixed bar, shown when cta-master leaves view) ── */
+.cta-shortcut{
+  position:absolute;left:0;right:0;bottom:0;
+  z-index:35;
+  background:#fff;
+  box-shadow:0 -2px 12px rgba(0,0,0,.10);
+  display:flex;flex-direction:row;gap:8px;padding:16px;
+  direction:ltr; /* teal (رزرو وقت مطب) on the left, green (ویزیت آنلاین فوری) on the right — matches Figma */
+  transform:translateY(110%);
+  transition:transform .32s cubic-bezier(.22,1,.36,1);
+}
+.cta-shortcut.show{transform:translateY(0)}
+.sc-btn{
+  flex:1;min-width:0;
+  display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;
+  border-radius:12px;padding:10px 12px 10px 14px;
+  cursor:pointer;
+}
+.sc-btn-teal{background:var(--teal-600)}
+.sc-btn-green{background:var(--green-cta)}
+.sc-label{font-size:12px;font-weight:700;color:#fff;line-height:20px;white-space:nowrap}
+.sc-icon{width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff}
+
+/* ── BOTTOM-SHEET MODAL (reservation / e-visit) ──────────── */
+.sheet-scrim{
+  position:absolute;inset:0;z-index:50;
+  background:rgba(10,10,10,.45);
+  opacity:0;pointer-events:none;transition:opacity .28s ease;
+}
+.sheet-scrim.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:51;
+  background:#fff;border-radius:24px 24px 0 0;
+  display:flex;flex-direction:column;max-height:88%;
+  transform:translateY(101%);
+  transition:transform .34s cubic-bezier(.22,1,.36,1);
+}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{display:flex;justify-content:center;padding-top:12px;flex-shrink:0}
+.sheet-handle span{width:40px;height:4px;background:#e0e0e0;border-radius:8px}
+.sheet-header{
+  flex-shrink:0;height:64px;display:flex;flex-direction:row;align-items:center;
+  gap:8px;padding:0 16px;
+}
+.sheet-title{flex:1;min-width:0;font-size:16px;font-weight:700;color:#0a0a0a;text-align:right;line-height:28px}
+.sheet-back,.sheet-close{
+  flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;
+  color:#0a0a0a;cursor:pointer;
+}
+.sheet-back{display:none}
+.sheet[data-step="2"] .sheet-back{display:flex}
+.sheet-body{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:8px}
+.sheet-body::-webkit-scrollbar{display:none}
+.sheet-footer{flex-shrink:0;border-top:1px solid var(--subtle);padding:8px 16px;background:#fff}
+.sheet-cta{
+  width:100%;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#fff;cursor:pointer;
+}
+.sheet[data-flow="reservation"] .sheet-cta{background:var(--teal-600)}
+.sheet[data-flow="evisit"] .sheet-cta{background:var(--green-cta)}
+.sheet-home{width:72px;height:4px;background:#09090a;border-radius:8px;margin:8px auto 2px}
+
+/* day chips */
+.day-row{display:flex;flex-direction:row;gap:8px;padding:0 16px 4px;overflow-x:auto;scrollbar-width:none;direction:rtl}
+.day-row::-webkit-scrollbar{display:none}
+.day-chip{
+  flex-shrink:0;width:90px;background:#fff;border:1px solid var(--card);border-radius:8px;
+  padding:12px 8px 8px;display:flex;flex-direction:column;gap:8px;align-items:center;cursor:pointer;
+}
+.day-chip-name{font-size:14px;font-weight:600;color:var(--primary);text-align:center;width:100%}
+.day-chip-date{font-size:12px;font-weight:500;color:var(--primary);text-align:center;width:100%}
+.day-chip.sel{background:var(--teal-50);border-color:var(--teal-600)}
+
+/* time-slot rows (radio on the right) */
+.ts-list{padding:16px 16px 0}
+.ts-row{display:flex;flex-direction:row;align-items:center;gap:8px;padding:16px 0;cursor:pointer;border-bottom:1px solid var(--subtle)}
+.ts-row:last-child{border-bottom:none}
+.ts-radio,.vt-radio{flex-shrink:0;width:18px;height:18px;border-radius:50%;border:1px solid #d4d6d7;box-sizing:border-box}
+.ts-row.sel .ts-radio,.vt-row.sel .vt-radio{border:5px solid var(--teal-600)}
+.ts-label{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--primary);text-align:right;line-height:20px}
+
+/* visit-type rows (radio right, title middle, price left) */
+.vt-list{padding:16px 16px 0}
+.vt-row{display:flex;flex-direction:row;align-items:center;gap:8px;padding:16px 0;cursor:pointer;border-bottom:1px solid var(--subtle)}
+.vt-row:last-child{border-bottom:none}
+.vt-title{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--primary);text-align:right;line-height:20px}
+.vt-price{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;direction:rtl}
+.vt-price-now{font-size:11px;font-weight:700;color:var(--primary);line-height:18px;white-space:nowrap}
+.vt-price-old{font-size:10px;font-weight:400;color:var(--tertiary);line-height:16px;text-decoration:line-through;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div id="shell">
+<div id="phone">
+
+  <!-- APP BAR (fixed) — title fades in on scroll -->
+  <div class="app-bar">
+    <button class="app-bar-back" aria-label="بازگشت" onclick="history.back()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 6 15 12 9 18"/>
+      </svg>
+    </button>
+    <h1 class="app-bar-title" id="appBarTitle">دکتر کمال کامیابی نیا</h1>
+    <div class="app-bar-spacer"></div>
+  </div>
+
+  <!-- SCROLLABLE CONTENT -->
+  <div id="scroll">
+
+    <!-- PROFILE -->
+    <div class="profile">
+      <div class="profile-photo-wrap">
+        <div class="profile-photo">
+          <img src="assets/1577b28b-5acc-4d95-a1a1-5d0b178156e7.jpg" alt="دکتر کمال کامیابی نیا"
+               onerror="this.style.display='none'">
+        </div>
+        <span class="profile-badge">فعال</span>
+      </div>
+      <p class="profile-name" id="profileName">دکتر کمال کامیابی نیا</p>
+      <p class="profile-spec">متخصص اعصاب و روان، فلوشیب انگل شناسی</p>
+
+      <!-- META ROW -->
+      <div class="meta-row">
+        <span class="meta-item">🏥 نظام پزشکی ۳۲۵۲۴۶۴</span>
+        <span class="meta-dot"></span>
+        <span class="meta-item">⭐️ ۴٫۵ (۳۴۲۷+)</span>
+        <span class="meta-dot"></span>
+        <span class="meta-item">💼 ۱۶ سال تجربه</span>
+      </div>
+    </div>
+
+    <!-- INSURANCE / E-PRESCRIPTION (colored pills) -->
+    <div class="ins-wrap">
+      <div class="ins-row">
+        <span class="ins-pill ins-pill-navy">تامین اجتماعی <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAcCAYAAABsxO8nAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEqADAAQAAAABAAAAHAAAAAAlmQw0AAABcmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkFkb2JlIFBob3Rvc2hvcCAyNi4wIChXaW5kb3dzKTwveG1wOkNyZWF0b3JUb29sPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KFzxqoQAAAudJREFUOBG11Gtoj1EcwPH9ZxvWhpm55DaNYSyUJU2MlNBkb8ithJTL3iGXV97wCiulhRWRZDa3FGOU5QUmubWaZaMVi5m57GK2+X7nmVIuI059/uf/nOc5v+dcfucJC/tHJfSzOO3t7bHcy8QStOEELoZCoQ/UXSsEGYn9eIPO8po/OYj7bRQeCsdo3EAbbmEl1uAuWnEEyfjxbLgRjSzcQz0OYhLiA5Opj6IZBs1EdOfoOqLSMJCGjchGC/KCeg51CiyPUIQRmAf75iCXdasJI8hYFMJSjs24gCY8wGHk4SEasRfbUQlLPpINtBo+cAkZWI9n2AKnFRtIoN4GN2AtZqMYTnWFgTbgChIxEc5/J2LgGp1FAVLRC5fhJkyAi34dq8KZYx3O4QWSEY8yTEUiSnATSZiCaxgQXFdRX8DbCH7eox6RMAkbYXsW3sEXWAwcgztoQm/Y5ykaHVFPuGufbUD3oL5K/RELsQAGLYZbHoUG2GcQevhmpzIbhSiHHZYiAd73re2YD9OhFS5HBRzVXBQ4Ih8y0B6YQ6dgnozBJ3SWZv6kYBpOBo37qGciZKBSPMZyHMBL3Ibr0Q0mnsXR2XYcrmkuFuEe7ofYOoONwg4sg4EOwWH3hzvp6X+CVzDwYjj1Y9gFp/m1ELAvslEdMJfGwENsvozDbrzHc6xDXGf/72puRGE6PA6fcD64nkVt5n9GEdLhJvy68FAazsD0bwh4jE7D7e56sQO2wtF5eDfBfPu7Quee+qPedPCgpgSdu1G7ox7sSLj93wrX3ldHenT8BA859+Ewc98EPTxnnsV+cIdq+YjV8rwj7AXT4zlt9RFG5aIvhsHSglSYGz6cARPxNRyZbZ61aphrjjjC4XrifUM0apGOfNju4vqJHQJH6jEZD0dfCQfgi0vN7Bn8SUMJymBnpzgSDXB6NbA9CR6nOvhS19DgdQZy7kNRwVzNGYc9AH3gKFwjvwiOfjCqeM7r/1O+AFZQdANdehWLAAAAAElFTkSuQmCC" alt=""></span>
+        <span class="ins-pill ins-pill-darknavy">تامین سلامت <img src="data:image/png;base64,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" alt=""></span>
+        <span class="ins-pill ins-pill-mint">نسخه الکترونیک</span>
+      </div>
+      <div class="ins-row">
+        <span class="ins-pill ins-pill-gold">کارکنان بانک ملی <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAcCAYAAACDBoQZAAAAAXNSR0IArs4c6QAAAJhlWElmTU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAIdpAAQAAAABAAAATgAAAAAAAAEsAAAAAQAAASwAAAABAASQBAACAAAAFAAAAISgAQADAAAAAQABAACgAgAEAAAAAQAAABOgAwAEAAAAAQAAABwAAAAAMjAxOTowODoyOCAxMjo0NTo0NgCPJdvvAAAACXBIWXMAAC4jAAAuIwF4pT92AAABs2lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE4IChXaW5kb3dzKTwveG1wOkNyZWF0b3JUb29sPgogICAgICAgICA8eG1wOkNyZWF0ZURhdGU+MjAxOS0wOC0yOFQxMjo0NTo0NjwveG1wOkNyZWF0ZURhdGU+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgr2e96jAAAFpElEQVRIDYVUW2wUZRQ+88/M3ndnr7OXtrtLr7abtpSmLaWmrYZgilFA5cFbDDHyrCa846NBYzQxREOiDz7BiyEBEYsixgiFBlqhd/bW+963u92ZnaszS3YtFOVkJv+ZOed8/3fOf/4D8GxBiov6PlOw//M4c+YY3dVFv2EwaLrSieL45YnlX779dDz/XzFPBTt79hi9r9P/dp1N+4FDhhYdgYiSBrHJEjcZSzBffXfjwcXvT19nnwTdRf9gI1Cr89kOh1034vHp20lcILh0HnQg6Jw+Y58Oh7dCRfbVc+97A0+C4Tt/fHPS6T362sDHVpt+7MFC7i5pasAES3ewaO6ErGTmZ6fCN5n1iK6rhTpBOcyMcSZyayIDYhWDqCrqarB59tm89oMmGYGWG+J9/vfqHQ4KcBwDjhNwBIP25cTnqWJmrpTltd68x+aGpWy8ilFj9tmbPic4696djeQ4XjscHTl8YsBF29sQelRWHEcYZbPTMtW28eDe1KzdvL1/eDDQctBX+PPCRLGkAtaYHTgQ8Dpa6SO5MlUwuAcFq93eWt0RZBkAw9QHnHRDqLPreS3aukgQetKDO2gtwEbFtQqGzUSAMLObG2ZfI1bf00gTCMOhXAZhbgGkzQTgTXsAb6gHk1FrpppG89fPj89zpRikGI1RQVIPUqqkefoVMJi93gM8rg2Z3EOlpvaBILmwZBLuTYG0ruyazYGU3wIpGgOMIKFEEjzBzOgDdHHAggvhPnl7/qclplxhVk9bdD2tloDO6+gu67U5VGJ10sMwSOk0YDarcjL6SopSOAqi0QhkqE2HcINmO1fOiTwev5/IMGqeFbCVh1slic7P8YulG52jFI4I3I0pAHJcratSK8oCUkZhx3FA6HSAcJJP5WE7ES3limVIZSdBUsEqTRvnnaTiQbm8Jlpi1ylBQ5bR3m7Am5tAikSBv3QFpI1NIPt6AW9pBnYrRXosRVdft2OgzYM6+g8pPa1IhZmfTPFtng7OUq/vLqHENFMsJqg6n4d8cQRAEEGYmgbN8BAQ+/tBaToQsolIMplktRgjCjLcP3UV/m2N09eBpXuyt8WV8iVGui2Y6w5zLo9HxPV6XHPkZVDfqhRLTDERvgWZZNxYJrQ/T9zJzyo2pXd2jJaJu8uZtnaaHR40HcrGLpsSG+vhKkB1lZTKJFdjs2LqN9S/z9HX22bydtuylRRVn9oNOBplueYRyiNhxFAkHl+Jx9i/3Q1NToPJRKl3QBBEKRaeW5q4+MV8ITtPMWU5mnq4du7H+OL0zMwjZo+NoI8GQU+Fusd6+oMfWi3ImUhQN6zPvS6bLRZ/dn11jlj+wesP4mN52fjX778ufnLqy8lbVdaPMVM/bq6AMBokCu0BssFq0Q7LJNuYSd/DOH5aKmxONpJaOYQrd6u4tnalEF6/dmlqq7AT7DFmVcPJUbOzs9X3gtHvGzN46KDGoCML+VImvZz89e5E5Oof4zGlYWDXcKzVrAqkrpNRjh975yW3xWs1i4i4sBjLfF3nsxY1lEnpRFf8/LXZ5R3+NUI1ZYdxl6qce2VTxVlU58dMKER2bLtQAotRGgBdKoJvtMBSedfY3omkBlaAmpuNSZdLX7EdP44ackwwJazsN0iEPReRN1Ug1fZUZml7s0WgRL2ZJwlGljCRABfiBca5Fp1Tg3L+ThuBCtqkou6JRmu1q84z1QdUEMwgBWScMCNW4go4xhkIjJdE0PAkyUase60O4xbNyqxH5AneyAkRJezRZFSUGpiSDpE2CO2ihAcxEDZIAm3ySKRYAfMjkPWkKHsc5m2t4reKAGOUSSgQJFpVSVSlBqbkK2RlKEsI8kqZiwIiAghEQgaRUW7RArUSvlANkoNBXUrU2hFRrsyx6v+nrncASNndZZRDIeWwdovc20vGKL9tw+1WR3ZN/gEA+lTTQJ87AQAAAABJRU5ErkJggg==" alt=""></span>
+        <span class="ins-pill ins-pill-white">نیروهای مسلح <img src="data:image/png;base64,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" alt=""></span>
+      </div>
+    </div>
+
+    <!-- COMMENT PREVIEW CARDS -->
+    <div class="comments-row" id="commentsRow"></div>
+
+    <!-- ABOUT -->
+    <div class="sec-title">
+      <span class="sec-title-text">درباره دکتر</span>
+      <span class="sec-title-icon" title="بازخورد">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </span>
+    </div>
+    <div class="about">
+      <div class="about-box">
+        <p class="about-text">مشاوره در زمینه سکته های مغزی خونریزی های مغزی صرع و تشنج بیماری MS دیسک و ستون فقرات سردردهای میگرنی پارکینسون و آلزایمر بیماریهای عضلانی اختلالات خواب وسواس افسردگی و اضطراب بیش فعالی ADHD تومورهای مغزی و بیماریهای عفونی و خودایمنی مغز.</p>
+        <span class="about-more">بیشتر بخوانید</span>
+      </div>
+    </div>
+
+    <!-- CTA MASTER -->
+    <div class="cta-master" id="ctaMaster">
+      <!-- GREEN: online visit -->
+      <div class="cta-btn cta-btn-green">
+        <div class="cta-price">
+          <span class="cta-price-now">از ۱۹۸٬۰۰۰ تومان</span>
+          <span class="cta-price-old">۳۲۱٬۰۰۰ تومان</span>
+        </div>
+        <div class="cta-right">
+          <div class="cta-labels">
+            <span class="cta-title">ویزیت آنلاین لازم دارم</span>
+            <span class="cta-sub">فوری، زمان دلخواه، تلفنی، تصویری و متنی</span>
+          </div>
+          <span class="cta-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+      <!-- TEAL: in-person reservation -->
+      <div class="cta-btn cta-btn-teal">
+        <div class="cta-price">
+          <span class="cta-price-now">۶۰۰٬۰۰۰ تومان</span>
+          <span class="cta-price-old">۱٬۲۴۰٬۰۰۰ تومان</span>
+        </div>
+        <div class="cta-right">
+          <div class="cta-labels">
+            <span class="cta-title">میخواهم نوبت مطب رزرو کنم</span>
+            <span class="cta-sub">اولین زمان آزاد: ۲۶ مرداد ۱۴۰۵</span>
+          </div>
+          <span class="cta-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="reviews-head">
+      <span class="reviews-source">برگرفته از <img class="reviews-source-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC8AAAAMCAYAAADyH+Q0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAqNJREFUeAHNVUtvElEUPkOwtkkRpTGCidRoExUTi1bjxrpwobjQnbppl7CprqRu1FWNf6B148JFZVVXglFLDAboAjXaguKj4oOJgbaWlxBtocn1nAszjDgUjaPxSwhz79zz3fP4zhmBIeA/RH6lDGPJOBj1bXCue7fqGZ108FfI/hWuvJuGXVO3YEx8CevR+aZwv46wo0/uUgHYh69F5n4VYY3wzn9k7f4bTCuYH3pYMJPinNEvi/J+MJNmO8ITbFPAw0YSz1iusrQqj06Z0WZRap31+/sccNhkgcjBk7DH0MX3osUsHHt6D5LfSiAIAJ50As7MBMA3n5Ttbqbe8vcSdI1ORktZee16EQbfQrKlM5I+JXhSCbykyJ9HcX/4zSP+HMqmwYmcveu6IF8pwzWURayY4e96DSa4uM3Of0NbbDBg6QFreyecjgUgjHZV5xOwE+U0grIi6JVOiEslCOfm6pFi9P0mM7QCBTg8+xjO1hrLGQ+Dv88B3R0GuPNZBGtHJ99PKvgLGDDxD27ukXkubd/7EzfZjHM/LODff5wn4wLetRUD08NfglZSIykXKnUumjwxlBjJSk+l8S2IPCOjYrX09C9piyKUZint22saVcKL2W20oxIDCDxzJAEJtFaeu022JHIVBFEuPnx/3XaIO1xQJIRkJ+TKy8yFZaZDNFMHsIykRXoestrgcq2UpLOr72dUL2m0G0RnvYsiiOhg/wYzTNiPYAbX8oZzxadkmxMbrRDKz/FzzXipByjbbuwb4lfuC9JHKr+yzC+QI2tYy5mrNaISpO1WdgRqVsrg5AEHX0vn1DjVeEk+xjVtdX61+el8HmIhnMOnph/8MIf/BOfxe0JzffzTLNMKqg1LpaYJQf/G1b5wvwHimeyrznet8B0lpIYOL3ru3gAAAABJRU5ErkJggg==" alt="دکترساینا"></span>
+      <span class="reviews-title">نظرات مراجعان (۳۴۲۷ نظر)</span>
+      <span class="reviews-bot" title="چت‌بات">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="8" width="18" height="12" rx="3"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><line x1="8" y1="13" x2="8" y2="15"/><line x1="16" y1="13" x2="16" y2="15"/>
+        </svg>
+      </span>
+    </div>
+    <div class="reviews-list" id="reviewsList"></div>
+
+  </div><!-- /scroll -->
+
+  <!-- CTA SHORTCUT (bottom, revealed when cta-master scrolls out of view) -->
+  <div class="cta-shortcut" id="ctaShortcut">
+    <div class="sc-btn sc-btn-teal">
+      <span class="sc-label">رزرو وقت مطب</span>
+      <span class="sc-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </span>
+    </div>
+    <div class="sc-btn sc-btn-green">
+      <span class="sc-label">ویزیت آنلاین فوری</span>
+      <span class="sc-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+
+  <!-- BOTTOM-SHEET MODAL (reservation / e-visit) -->
+  <div class="sheet-scrim" id="sheetScrim"></div>
+  <div class="sheet" id="sheet" data-flow="reservation" data-step="1">
+    <div class="sheet-handle"><span></span></div>
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="sheetTitle">انتخاب زمان رزرو وقت حضوری</h2>
+      <button class="sheet-back" id="sheetBack" aria-label="مرحله قبل">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+      <button class="sheet-close" id="sheetClose" aria-label="بستن">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+    <div class="sheet-footer">
+      <button class="sheet-cta" id="sheetCta">مرحله بعد</button>
+      <div class="sheet-home"></div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+</div><!-- /shell -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   COMMENT PREVIEW CARDS
+═══════════════════════════════════════════════════════════ */
+const COMMENTS = [
+  { text:'برای مشکل عروق گرفته مراجعه کرده بودم، شکر خدا، سکته کردم!', stars:'⭐', date:'۲۰ روز پیش' },
+  { text:'بسیار حاذق، صبور و با اخلاق بودند، خیلی از حرف ها رو نگفته می‌فهمیدند. خدا خیرشون بده', stars:'⭐⭐⭐⭐⭐', date:'یک سال پیش' },
+  { text:'دکتر خیلی دقیق و حرفه‌ای بودن. روند درمان رو کامل توضیح دادن و پیگیر بودن.', stars:'⭐⭐⭐⭐⭐', date:'۲ ماه پیش' },
+];
+const commentsRow = document.getElementById('commentsRow');
+COMMENTS.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'comment-card';
+  el.innerHTML = `
+    <p class="comment-text">${c.text}</p>
+    <div class="comment-foot">
+      <span class="comment-stars">${c.stars}</span>
+      <span class="comment-dot"></span>
+      <span class="comment-date">${c.date}</span>
+    </div>`;
+  commentsRow.appendChild(el);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   REVIEWS
+═══════════════════════════════════════════════════════════ */
+const REVIEWS = [
+  { stars:5, date:'۲ دقیقه پیش',  text:'دکتر خیلی مهربون و صبور بودن. توضیحات کاملی دادن و وقت کافی برای جواب دادن به سوالام گذاشتن. قطعاً دوباره مراجعه می‌کنم.' },
+  { stars:5, date:'۳ ساعت پیش',   text:'اولین باری بود که پیش این دکتر می‌رفتم، ولی انگار سال‌هاست می‌شناختمشون. خیلی آروم و با حوصله توضیح دادن.' },
+  { stars:5, date:'یک هفته پیش',  text:'ممنون از دکتر که با دقت به مشکلم گوش داد. تشخیص سریع و دقیق بود و درمان هم خوب پیش رفت. واقعاً از همه بهتره.' },
+  { stars:5, date:'۳ ماه پیش',    text:'رفتار محترمانه دکتر و تیمشون واقعاً تحسین‌برانگیزه. مطب مرتب و وقت‌شناس. بدون تردید دوباره مراجعه می‌کنم.' },
+  { stars:5, date:'همین الان',     text:'دکتر دانش بالایی دارن و همه چیز رو با صبر توضیح دادن. احساس کردم به دست متخصص واقعی خوبی رسیدم.' },
+  { stars:1, date:'۳۰ دقیقه پیش', text:'با دکتر وقت گرفتم و واقعاً راضی بودم. تشخیص دقیق و درمان مؤثر. دفتر کارشون هم تمیز و منظم بود. ممنون از تیم خوبشون.' },
+  { stars:5, date:'دیروز',         text:'یکی از بهترین پزشکانی که تا حالا دیدم. بدون عجله گوش داد و بهترین راه‌حل رو پیشنهاد داد. به همه توصیه می‌کنم.' },
+  { stars:3, date:'۲ هفته پیش',   text:'دکتر بسیار حرفه‌ای و با تجربه. نوبت دهی آسان بود و زیاد منتظر نموندم. مشکلم خیلی سریع‌تر از چیزی که فکر می‌کردم حل شد.' },
+  { stars:1, date:'۱۵ دقیقه پیش', text:'برخورد دکتر و کارکنان مطب خیلی خوب بود. احساس کردم واقعاً به سلامتم اهمیت می‌دن. داروهایی که تجویز کردن خیلی مؤثر بود.' },
+];
+const reviewsList = document.getElementById('reviewsList');
+REVIEWS.forEach(r => {
+  const el = document.createElement('div');
+  el.className = 'review';
+  el.innerHTML = `
+    <div class="review-meta">
+      <span class="review-stars">${'⭐'.repeat(r.stars)}</span>
+      <span class="review-dot"></span>
+      <span class="review-date">${r.date}</span>
+    </div>
+    <p class="review-text">${r.text}</p>`;
+  reviewsList.appendChild(el);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL-DRIVEN STATES
+   1) App-bar title fades in once the inline name scrolls under it.
+   2) cta-shortcut bar slides up once cta-master scrolls out the top.
+═══════════════════════════════════════════════════════════ */
+const scrollEl   = document.getElementById('scroll');
+const nameEl     = document.getElementById('profileName');
+const ctaMaster  = document.getElementById('ctaMaster');
+const appBarTitle= document.getElementById('appBarTitle');
+const ctaShortcut= document.getElementById('ctaShortcut');
+
+let ticking = false;
+function updateScrollStates() {
+  ticking = false;
+  const topRef = scrollEl.getBoundingClientRect().top;
+
+  // (1) reveal app-bar title when inline name has scrolled above the viewport top
+  const nameBottom = nameEl.getBoundingClientRect().bottom;
+  appBarTitle.classList.toggle('show', nameBottom <= topRef + 4);
+
+  // (2) reveal cta-shortcut only when cta-master is fully scrolled past the top
+  const ctaBottom = ctaMaster.getBoundingClientRect().bottom;
+  ctaShortcut.classList.toggle('show', ctaBottom < topRef);
+}
+scrollEl.addEventListener('scroll', () => {
+  if (!ticking) { ticking = true; requestAnimationFrame(updateScrollStates); }
+}, { passive:true });
+updateScrollStates();
+
+/* ═══════════════════════════════════════════════════════════
+   BOTTOM-SHEET MODAL
+   • teal CTAs → reservation flow (1 step: time picker) → payment.html?type=reservation
+   • green CTAs → e-visit flow (step1: visit type → step2: time picker) → payment.html?type=evisit
+═══════════════════════════════════════════════════════════ */
+const DAYS = [
+  ['شنبه','۲۰ تیر'],['یکشنبه','۲۱ تیر'],['دوشنبه','۲۲ تیر'],['سه‌شنبه','۲۳ تیر'],
+  ['چهارشنبه','۲۴ تیر'],['پنجشنبه','۲۵ تیر'],['جمعه','۲۶ تیر'],
+];
+const SLOTS = ['۰۹:۰۰ تا ۰۹:۳۰','۰۹:۳۰ تا ۱۰:۰۰','۱۰:۰۰ تا ۱۰:۳۰','۱۰:۳۰ تا ۱۱:۰۰','۱۱:۰۰ تا ۱۱:۳۰','۱۱:۳۰ تا ۱۲:۰۰','۱۶:۰۰ تا ۱۶:۳۰','۱۶:۳۰ تا ۱۷:۰۰'];
+const VISITS = ['ویزیت آنلاین فوری','ویزیت آنلاین در زمان تعیین شده','مشاوره متنی','ویزیت تصویری'];
+
+function renderTimePicker(){
+  const days = DAYS.map((d,i)=>
+    `<div class="day-chip${i===1?' sel':''}" data-day="${i}"><span class="day-chip-name">${d[0]}</span><span class="day-chip-date">${d[1]}</span></div>`).join('');
+  const slots = SLOTS.map((s,i)=>
+    `<div class="ts-row${i===0?' sel':''}" data-slot="${i}"><span class="ts-radio"></span><span class="ts-label">ساعت ${s}</span></div>`).join('');
+  return `<div class="day-row">${days}</div><div class="ts-list">${slots}</div>`;
+}
+function renderVisitTypes(){
+  return `<div class="vt-list">${VISITS.map((t,i)=>
+    `<div class="vt-row${i===0?' sel':''}" data-visit="${i}"><span class="vt-radio"></span><span class="vt-title">${t}</span>`+
+    `<div class="vt-price"><span class="vt-price-now">۱۹۸٬۰۰۰ تومان</span><span class="vt-price-old">۳۲۱٬۰۰۰ تومان</span></div></div>`).join('')}</div>`;
+}
+
+const sheet      = document.getElementById('sheet');
+const sheetScrim = document.getElementById('sheetScrim');
+const sheetBody  = document.getElementById('sheetBody');
+const sheetTitle = document.getElementById('sheetTitle');
+let sheetFlow = 'reservation', sheetStep = 1;
+
+function renderSheet(){
+  sheet.dataset.flow = sheetFlow;
+  sheet.dataset.step = sheetStep;
+  if (sheetFlow === 'reservation') {
+    sheetTitle.textContent = 'انتخاب زمان رزرو وقت حضوری';
+    sheetBody.innerHTML = renderTimePicker();
+  } else {
+    sheetTitle.textContent = 'انتخاب نوع ویزیت آنلاین';
+    sheetBody.innerHTML = sheetStep === 1 ? renderVisitTypes() : renderTimePicker();
+  }
+  sheetBody.scrollTop = 0;
+}
+function openSheet(flow){
+  sheetFlow = flow; sheetStep = 1;
+  renderSheet();
+  sheetScrim.classList.add('open');
+  sheet.classList.add('open');
+}
+function closeSheet(){
+  sheetScrim.classList.remove('open');
+  sheet.classList.remove('open');
+}
+function sheetNext(){
+  if (sheetFlow === 'reservation') {
+    location.href = 'payment.html?type=reservation';
+  } else if (sheetStep === 1) {
+    sheetStep = 2; renderSheet();
+  } else {
+    location.href = 'payment.html?type=evisit';
+  }
+}
+function sheetBackStep(){ if (sheetStep === 2) { sheetStep = 1; renderSheet(); } }
+
+/* single-select within day / time-slot / visit groups */
+sheetBody.addEventListener('click', e => {
+  const day  = e.target.closest('.day-chip');
+  const slot = e.target.closest('.ts-row');
+  const vis  = e.target.closest('.vt-row');
+  if (day)  { sheetBody.querySelectorAll('.day-chip').forEach(x=>x.classList.remove('sel')); day.classList.add('sel'); }
+  if (slot) { sheetBody.querySelectorAll('.ts-row').forEach(x=>x.classList.remove('sel')); slot.classList.add('sel'); }
+  if (vis)  { sheetBody.querySelectorAll('.vt-row').forEach(x=>x.classList.remove('sel')); vis.classList.add('sel'); }
+});
+
+document.getElementById('sheetCta').addEventListener('click', sheetNext);
+document.getElementById('sheetClose').addEventListener('click', closeSheet);
+document.getElementById('sheetBack').addEventListener('click', sheetBackStep);
+sheetScrim.addEventListener('click', closeSheet);
+
+/* wire the doctor-page CTAs to open the right flow */
+document.querySelector('.cta-btn-teal').addEventListener('click', () => openSheet('reservation'));
+document.querySelector('.cta-btn-green').addEventListener('click', () => openSheet('evisit'));
+document.querySelector('.sc-btn-teal').addEventListener('click', () => openSheet('reservation'));
+document.querySelector('.sc-btn-green').addEventListener('click', () => openSheet('evisit'));
+</script>
+</body>
+</html>

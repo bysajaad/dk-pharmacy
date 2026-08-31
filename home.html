@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ویزیت آنلاین – دیجی‌کالا سلامت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ───────────────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+img{display:block;max-width:100%}
+button{border:none;background:none;cursor:pointer;font:inherit}
+
+/* ── ROOT ────────────────────────────────────────────────── */
+:root{
+  --green:#24a565;--green-lt:#c0e5d5;--green-dk:#1a7a4a;
+  --teal:#0098b0;--teal-lt:#e5f3f5;--teal-dk:#008299;
+  --page-bg:#fff;
+  --text-dark:#0a0a0a;--text-mid:#2e3638;--text-muted:#798486;
+  --card-bg:#f7f7f7;
+  --radius-xl:24px;
+  --font:'Vazirmatn',system-ui,sans-serif;
+}
+
+html,body{
+  width:100%;height:100%;
+  font-family:var(--font);
+  background:#ededf0;
+  overflow:hidden;
+}
+
+/* ── PHONE SHELL ─────────────────────────────────────────── */
+#shell{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+}
+
+#phone{
+  position:relative;
+  width:360px;height:100%;max-height:780px;
+  background:var(--page-bg);
+  border-radius:32px;
+  overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.06);
+  display:flex;flex-direction:column;
+}
+
+
+/* ── APP BAR ─────────────────────────────────────────────── */
+.app-bar{
+  flex-shrink:0;
+  height:56px;background:#fff;
+  display:flex;flex-direction:row;align-items:center;
+  padding:0 20px;gap:20px;
+}
+.app-bar-back{
+  flex-shrink:0;width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+}
+.app-bar-back img{width:24px;height:24px;object-fit:contain}
+.app-bar-title{
+  flex:1;font-size:16px;font-weight:700;color:var(--text-dark);
+  text-align:right;line-height:1.4;
+}
+.app-bar-spacer{flex-shrink:0;width:24px}
+
+/* ── SCROLLABLE CONTENT ───────────────────────────────────── */
+#scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#scroll::-webkit-scrollbar{display:none}
+
+/* ── HERO ─────────────────────────────────────────────────── */
+.hero{
+  position:relative;
+  height:455px;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:-40px; /* extend so blur edges are clipped */
+  background:linear-gradient(175deg,#e8f4ee 0%,#d4ecff 40%,#f0e8ff 80%,#ffe8f0 100%);
+  filter:blur(37px);
+  opacity:.5;
+}
+.hero-bg img{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:center top;
+}
+.hero-overlay{
+  position:absolute;inset:0;
+  background:#70b5ff;
+  mix-blend-mode:overlay;
+}
+.hero-gradient{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0) 52%,
+    rgba(255,255,255,.6) 78%,
+    rgba(255,255,255,.97) 100%
+  );
+}
+
+/* search inside hero */
+.search-wrap{
+  position:absolute;top:8px;left:16px;right:16px;
+  z-index:10;
+}
+.search-bar{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.92);
+  border-radius:12px;
+  padding:10px 14px;
+  box-shadow:0 2px 12px rgba(0,0,0,.08);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.search-bar svg{width:18px;height:18px;color:var(--text-muted);flex-shrink:0}
+.search-placeholder{
+  font-size:13px;color:var(--text-muted);flex:1;text-align:right;
+}
+
+/* ── FLOAT FIELD ──────────────────────────────────────────── */
+#float-field{
+  position:absolute;
+  top:80px;left:-1px;
+  width:361px;height:288px;
+  pointer-events:none; /* let child clicks bubble up */
+}
+
+/* ORBIT: carries position */
+.orbit{
+  position:absolute;
+  will-change:left,top;
+  pointer-events:all;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+.orbit.move{
+  transition:left .65s cubic-bezier(.34,1.56,.64,1),
+             top  .65s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* SIZER: carries size */
+.sizer{
+  position:relative; /* so progress ring can be positioned inside */
+  transform:translate(-50%,-50%);
+  will-change:width,height;
+}
+.sizer.move{
+  transition:width .6s cubic-bezier(.34,1.56,.64,1),
+             height .6s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* FLOATER: carries float animation */
+.floater{
+  width:100%;height:100%;
+}
+
+/* GLASS BUBBLE ─────────────────────────────────────────── */
+.glass{
+  position:relative;
+  width:100%;height:100%;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.88);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:0;
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  container-type:size; /* enable cq units inside */
+  box-shadow:0 4px 20px rgba(0,0,0,.1);
+  /* inset glow added via var */
+  box-shadow:
+    0 var(--shadow-y,4px) var(--shadow-b,16px) var(--shadow-color,rgba(0,0,0,.08)),
+    inset 0 0 var(--glow-sz,14px) 0 var(--glow,#0da598);
+}
+.glass-bg{
+  position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(143.175deg,rgb(228,228,228) 17.02%,rgb(177,177,177) 113.38%);
+}
+.glass-color{
+  position:absolute;inset:0;border-radius:inherit;
+  background:var(--overlay,rgba(239,108,119,.8));
+  mix-blend-mode:overlay;
+}
+.glass-shine{
+  position:absolute;inset:0;border-radius:inherit;
+  background:radial-gradient(ellipse at 36% 28%,rgba(255,255,255,.52) 0%,transparent 58%);
+  pointer-events:none;
+}
+.spec-icon{
+  position:relative;z-index:2;
+  width:30cqmin;height:auto;
+  object-fit:contain;
+  flex-shrink:0;
+}
+.spec-count{
+  position:relative;z-index:2;
+  font-size:8.4cqw;
+  font-weight:400;
+  color:#111;
+  white-space:nowrap;
+  line-height:1.6;
+  text-align:center;
+  margin-top:1cqw;
+}
+.spec-name{
+  position:relative;z-index:2;
+  font-size:9.2cqw;
+  font-weight:700;
+  color:#111;
+  white-space:nowrap;
+  line-height:1.3;
+  text-align:center;
+}
+
+/* center bubble: larger border */
+.orbit.is-center .glass{
+  border-width:3px;
+}
+.orbit.is-center .sizer{
+  z-index:20;
+}
+
+/* ── FLOAT ANIMATIONS ─────────────────────────────────────── */
+@keyframes float-a{
+  0%,100%{transform:translate(0,0) rotate(0deg)}
+  33%{transform:translate(-3px,-7px) rotate(-.8deg)}
+  66%{transform:translate(4px,-4px) rotate(.5deg)}
+}
+@keyframes float-b{
+  0%,100%{transform:translate(0,0) rotate(0deg)}
+  40%{transform:translate(5px,-8px) rotate(1deg)}
+  80%{transform:translate(-2px,-5px) rotate(-.4deg)}
+}
+@keyframes float-c{
+  0%,100%{transform:translate(0,0)}
+  50%{transform:translate(0,-7px) rotate(.6deg)}
+}
+@keyframes float-d{
+  0%,100%{transform:translate(0,0) rotate(0deg)}
+  25%{transform:translate(4px,-6px) rotate(-.7deg)}
+  75%{transform:translate(-5px,-4px) rotate(.9deg)}
+}
+@keyframes float-e{
+  0%,100%{transform:translate(0,0)}
+  30%{transform:translate(-4px,-5px) rotate(.5deg)}
+  70%{transform:translate(3px,-9px) rotate(-.6deg)}
+}
+@keyframes float-f{
+  0%,100%{transform:translate(0,0) rotate(0deg)}
+  50%{transform:translate(-6px,-6px) rotate(.8deg)}
+}
+@keyframes float-g{
+  0%,100%{transform:translate(0,0)}
+  40%{transform:translate(3px,-10px) rotate(-.5deg)}
+  80%{transform:translate(-2px,-3px)}
+}
+@keyframes float-h{
+  0%,100%{transform:translate(0,0)}
+  50%{transform:translate(6px,-5px) rotate(1deg)}
+}
+
+/* ── HERO TEXT ───────────────────────────────────────────── */
+.hero-text{
+  position:absolute;
+  bottom:10px;left:48px;right:48px;
+  text-align:center;
+  z-index:10;
+}
+.hero-sub{
+  font-size:13px;font-weight:500;
+  color:var(--text-mid);
+  margin-bottom:4px;
+}
+.hero-title{
+  font-size:28px;font-weight:800;
+  color:var(--text-dark);
+  line-height:1.2;
+}
+
+/* ── SERVICES ─────────────────────────────────────────────── */
+.services{
+  display:flex;justify-content:space-around;
+  padding:8px 24px 8px;
+  background:#fff;
+  gap:8px;
+}
+.service-item{
+  display:flex;flex-direction:column;
+  align-items:center;gap:10px;
+  flex:1;
+}
+.service-icon-wrap{
+  width:75px;height:75px;
+  background:var(--card-bg);
+  border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.service-icon-wrap img{width:52px;height:52px;object-fit:contain}
+.service-label{
+  font-size:11px;font-weight:600;color:var(--text-mid);
+  text-align:center;line-height:1.45;
+  max-width:80px;
+}
+
+/* ── SECTION TITLE ────────────────────────────────────────── */
+.section-hdr{
+  display:flex;align-items:center;justify-content:flex-end;
+  padding:20px 16px 12px;
+  gap:8px;
+  background:#fff;
+}
+.section-title{
+  font-size:12px;font-weight:700;
+  color:var(--text-mid);
+  flex:1;text-align:right;
+}
+.section-icon{width:24px;height:24px;object-fit:contain}
+
+/* ── CATEGORY LIST (vertical, swipeable) ──────────────────── */
+.cat-section{background:#fff;padding-bottom:4px}
+.cat-list{display:flex;flex-direction:column;padding:0 16px}
+
+.cat-item-wrap{
+  position:relative;
+  height:94px;
+  margin-bottom:16px;
+  border-radius:16px;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+/* SWIPE REVEAL BACKGROUNDS */
+.swipe-bg{
+  position:absolute;inset:0;
+  border-radius:16px;
+  display:flex;align-items:center;
+  direction:ltr; /* isolate from RTL so flex-start/end are physical */
+}
+.swipe-bg-left{
+  background:var(--green);
+  justify-content:flex-end;
+  padding-right:36px;
+}
+.swipe-bg-right{
+  background:#0098b0;
+  justify-content:flex-start;
+  padding-left:36px;
+}
+.swipe-bg-inner{display:flex;flex-direction:column;align-items:center;gap:4px;width:84px}
+.swipe-bg-icon{width:48px;height:48px;object-fit:contain}
+.swipe-bg-text{
+  font-size:10px;font-weight:600;line-height:16px;
+  color:#fff;text-align:center;
+  direction:rtl;
+}
+
+/* DRAGGABLE CARD */
+.cat-card{
+  position:absolute;inset:0;
+  z-index:2; /* always above swipe backgrounds */
+  background:var(--card-bg);
+  border-radius:16px;
+  box-shadow:0 1px 2px rgba(0,0,0,.12);
+  display:flex;align-items:center;justify-content:flex-start;
+  padding:8px 16px 12px 8px;
+  gap:16px;
+  touch-action:pan-y;
+  will-change:transform;
+  cursor:grab;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.cat-card.snapping{
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.cat-card.flying{
+  transition:transform .28s ease-in;
+}
+.cat-card:active{cursor:grabbing}
+
+/* CARD CONTENT */
+.cat-info{display:flex;flex-direction:column;align-items:flex-start;flex:1;min-width:0}
+.cat-name{font-size:14px;font-weight:700;color:var(--text-dark);line-height:24px;white-space:nowrap}
+.cat-desc{font-size:10px;font-weight:400;color:var(--text-dark);line-height:16px;white-space:nowrap}
+.cat-bottom{display:flex;align-items:center;direction:rtl;padding-top:10px}
+.cat-pill{
+  display:inline-flex;align-items:center;gap:3px;
+  background:#fff;border:0.5px solid rgba(0,0,0,.08);
+  border-radius:999px;padding:4px 8px;
+  font-size:10px;color:var(--text-muted);
+  box-shadow:0 1px 1px rgba(0,0,0,.1);
+  white-space:nowrap;z-index:4;
+  margin-left:-4px;
+}
+.cat-dot{
+  display:inline-grid;place-items:start;
+  width:6px;height:6px;position:relative;flex-shrink:0;
+}
+.cat-dot-outer{position:absolute;inset:0;background:var(--green-lt);border-radius:50%}
+.cat-dot-inner{position:absolute;inset:1.5px;background:var(--green);border-radius:50%}
+.cat-avs{display:flex;flex-direction:row-reverse}
+.cat-av{
+  width:24px;height:24px;border-radius:50%;
+  border:0.5px solid #fff;overflow:hidden;
+  box-shadow:0 1px 1px rgba(0,0,0,.14);
+  background:#d9d9d9;flex-shrink:0;
+  margin-left:-4px;z-index:var(--az,1);
+}
+.cat-av img{width:100%;height:100%;object-fit:cover}
+.cat-icon{width:24px;height:24px;object-fit:contain;flex-shrink:0}
+
+/* ── DOCTOR CAROUSEL ──────────────────────────────────────── */
+.dr-section{background:#fff;padding-bottom:8px}
+.dr-title{
+  display:flex;align-items:center;justify-content:flex-end;
+  padding:16px 16px 0;gap:6px;
+}
+.dr-title-text{
+  font-size:12px;font-weight:600;
+  color:var(--text-mid);flex:1;text-align:right;
+}
+.dr-title-icon{width:15px;height:24px;object-fit:contain;flex-shrink:0}
+.dr-carousel{
+  display:flex;flex-direction:row;
+  gap:16px;overflow-x:auto;
+  padding:16px 16px 8px;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.dr-carousel::-webkit-scrollbar{display:none}
+.dr-card{
+  flex-shrink:0;width:178px;
+  background:var(--card-bg);
+  border-radius:16px;padding:16px;
+  box-shadow:0 1px 2px rgba(0,0,0,.12);
+  display:flex;flex-direction:column;
+  align-items:center;gap:10px;
+  scroll-snap-align:start;
+}
+.dr-photo-wrap{position:relative;flex-shrink:0}
+.dr-photo{
+  width:56px;height:56px;border-radius:50%;
+  overflow:hidden;border:1px solid #fff;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  background:#d9d9d9;
+}
+.dr-photo img{width:100%;height:100%;object-fit:cover}
+.dr-badge{
+  position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+  background:#e7f6f0;border:1px solid var(--green);
+  border-radius:100px;padding:2px 6px;
+  font-size:10px;font-weight:600;color:#058c53;
+  white-space:nowrap;
+}
+.dr-info{display:flex;flex-direction:column;align-items:center;width:100%}
+.dr-name{font-size:12px;font-weight:700;color:var(--text-mid);text-align:center;line-height:20px}
+.dr-spec{font-size:11px;font-weight:400;color:var(--text-mid);text-align:center;line-height:18px}
+.dr-meta{
+  display:flex;align-items:center;gap:6px;
+  justify-content:center;padding-top:16px;width:100%;
+  font-size:10px;color:var(--text-muted);
+}
+.dr-meta span{white-space:nowrap}
+.dr-meta strong{color:var(--text-mid);font-weight:700}
+.dr-sep{width:2px;height:2px;background:#efefef;border-radius:50%;flex-shrink:0}
+
+/* ── BOTTOM NAV ───────────────────────────────────────────── */
+.bottom-nav{
+  flex-shrink:0;
+  height:82px;
+  background:#fff;
+  border-top:1px solid rgba(0,0,0,.05);
+  display:flex;align-items:flex-start;
+  justify-content:space-around;
+  padding-top:10px;
+}
+.bnav-item{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:0 8px;flex:1;
+  opacity:.45;
+  transition:opacity .2s;
+}
+.bnav-item.active{opacity:1}
+.bnav-item svg{width:22px;height:22px}
+.bnav-item img{width:22px;height:22px;object-fit:contain}
+.bnav-item.active svg{color:var(--teal-dk)}
+.bnav-label{font-size:12px;font-weight:500;color:var(--text-muted)}
+.bnav-item.active .bnav-label{color:var(--teal-dk)}
+.home-pill{
+  width:72px;height:4px;background:#111;
+  border-radius:4px;margin:8px auto 0;
+}
+
+/* tap feedback */
+.orbit:not(.is-center) .glass:active{
+  filter:brightness(.93);
+}
+.orbit.is-center .glass:active{
+  filter:brightness(.97);
+}
+
+/* ── BOTTOM-SHEET MODAL (reservation / e-visit) ──────────── */
+.sheet-scrim{position:absolute;inset:0;z-index:50;background:rgba(10,10,10,.45);opacity:0;pointer-events:none;transition:opacity .28s ease}
+.sheet-scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:51;background:#fff;border-radius:24px 24px 0 0;display:flex;flex-direction:column;max-height:88%;transform:translateY(101%);transition:transform .34s cubic-bezier(.22,1,.36,1)}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{display:flex;justify-content:center;padding-top:12px;flex-shrink:0}
+.sheet-handle span{width:40px;height:4px;background:#e0e0e0;border-radius:8px}
+.sheet-header{flex-shrink:0;height:64px;display:flex;flex-direction:row;align-items:center;gap:8px;padding:0 16px}
+.sheet-title{flex:1;min-width:0;font-size:16px;font-weight:700;color:#0a0a0a;text-align:right;line-height:28px}
+.sheet-back,.sheet-close{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:#0a0a0a;cursor:pointer}
+.sheet-back{display:none}
+.sheet[data-step="2"] .sheet-back{display:flex}
+.sheet-body{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:8px}
+.sheet-body::-webkit-scrollbar{display:none}
+.sheet-footer{flex-shrink:0;border-top:1px solid #efefef;padding:8px 16px;background:#fff}
+.sheet-cta{width:100%;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;cursor:pointer}
+.sheet[data-flow="reservation"] .sheet-cta{background:#008299}
+.sheet[data-flow="evisit"] .sheet-cta{background:#05985a}
+.sheet-home{width:72px;height:4px;background:#09090a;border-radius:8px;margin:8px auto 2px}
+.day-row{display:flex;flex-direction:row;gap:8px;padding:0 16px 4px;overflow-x:auto;scrollbar-width:none;direction:rtl}
+.day-row::-webkit-scrollbar{display:none}
+.day-chip{flex-shrink:0;width:90px;background:#fff;border:1px solid #f7f7f7;border-radius:8px;padding:12px 8px 8px;display:flex;flex-direction:column;gap:8px;align-items:center;cursor:pointer}
+.day-chip-name{font-size:14px;font-weight:600;color:#2e3638;text-align:center;width:100%}
+.day-chip-date{font-size:12px;font-weight:500;color:#2e3638;text-align:center;width:100%}
+.day-chip.sel{background:#e5f3f5;border-color:#008299}
+.ts-list{padding:16px 16px 0}
+.ts-row{display:flex;flex-direction:row;align-items:center;gap:8px;padding:16px 0;cursor:pointer;border-bottom:1px solid #efefef}
+.ts-row:last-child{border-bottom:none}
+.ts-radio,.vt-radio{flex-shrink:0;width:18px;height:18px;border-radius:50%;border:1px solid #d4d6d7;box-sizing:border-box}
+.ts-row.sel .ts-radio,.vt-row.sel .vt-radio{border:5px solid #008299}
+.ts-label{flex:1;min-width:0;font-size:12px;font-weight:600;color:#2e3638;text-align:right;line-height:20px}
+.vt-list{padding:16px 16px 0}
+.vt-row{display:flex;flex-direction:row;align-items:center;gap:8px;padding:16px 0;cursor:pointer;border-bottom:1px solid #efefef}
+.vt-row:last-child{border-bottom:none}
+.vt-title{flex:1;min-width:0;font-size:12px;font-weight:600;color:#2e3638;text-align:right;line-height:20px}
+.vt-price{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;direction:rtl}
+.vt-price-now{font-size:11px;font-weight:700;color:#2e3638;line-height:18px;white-space:nowrap}
+.vt-price-old{font-size:10px;font-weight:400;color:#b3b9ba;line-height:16px;text-decoration:line-through;white-space:nowrap}
+
+</style>
+</head>
+<body>
+
+<div id="shell">
+<div id="phone">
+
+  <!-- APP BAR — RTL: first child (logo) on the right -->
+  <nav class="app-bar">
+    <div class="app-bar-back" style="cursor:pointer" onclick="history.back()">
+      <img src="assets/57286f8f-1688-4b1a-8274-675ae2c066d8.svg" alt=""
+           onerror="this.outerHTML='<svg width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'9 6 15 12 9 18\'/></svg>'">
+    </div>
+    <h1 class="app-bar-title">پروفایل و مشاور</h1>
+    <div class="app-bar-spacer"></div>
+  </nav>
+
+  <!-- SCROLL -->
+  <div id="scroll">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-bg">
+        <img src="assets/17ffe957-4866-47f6-af13-b7a76544cc0e.png" alt="">
+        <div class="hero-overlay"></div>
+      </div>
+      <div class="hero-gradient"></div>
+
+      <!-- Search -->
+      <div class="search-wrap">
+        <div class="search-bar">
+          <img src="assets/34d922a1-3253-4e69-8e13-60f0222a520f.svg" alt="" style="width:18px;height:18px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<svg style=\'width:18px;height:18px;flex-shrink:0\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#999\' stroke-width=\'2\'><circle cx=\'11\' cy=\'11\' r=\'8\'/><path d=\'m21 21-4.35-4.35\'/></svg>'">
+          <span class="search-placeholder">جستجوی پزشک، تخصص یا بیماری</span>
+        </div>
+      </div>
+
+      <!-- FLOAT FIELD -->
+      <div id="float-field"></div>
+
+      <!-- Hero Text -->
+      <div class="hero-text">
+        <p class="hero-sub">ویزیت فوری و وقت مطب با</p>
+        <h1 class="hero-title">برترین پزشکان ایران</h1>
+      </div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="services">
+      <div class="service-item">
+        <div class="service-icon-wrap">
+          <img src="assets/1d2a0c65-21ed-4a52-89a5-48c40387e4e9.png" alt="نسخه" onerror="this.style.background='linear-gradient(135deg,#c0e5d5,#e8f4ff)'">
+        </div>
+        <span class="service-label">ارسال آنلاین اقلام نسخه</span>
+      </div>
+      <div class="service-item">
+        <div class="service-icon-wrap">
+          <img src="assets/5b8498e9-3f8c-4ed7-be20-2db7acadb281.png" alt="ویزیت" onerror="this.style.background='linear-gradient(135deg,#dfe8ff,#ffe8f0)'">
+        </div>
+        <span class="service-label">ویزیت تلفنی و تصویری</span>
+      </div>
+      <div class="service-item">
+        <div class="service-icon-wrap">
+          <img src="assets/a77292f8-19e1-4af7-b8d5-731aacc788a4.png" alt="پرداخت" onerror="this.style.background='linear-gradient(135deg,#fff0c0,#ffe8d5)'">
+        </div>
+        <span class="service-label">پرداخت ۴ قسطه دیجی‌پی</span>
+      </div>
+    </div>
+
+    <!-- CATEGORIES SECTION -->
+    <div class="cat-section">
+      <div class="section-hdr">
+        <div class="section-title">تخصص‌ها و امراض</div>
+        <img src="assets/dcb0dbc3-ee58-4ff6-ba75-df1bfcc3183f.svg" alt="" class="section-icon" onerror="this.style.display='none'">
+      </div>
+      <!-- First 6 cat-items -->
+      <div class="cat-list" id="cat-list-a"></div>
+    </div>
+
+    <!-- DOCTOR CAROUSEL (mid-list) -->
+    <div class="dr-section" id="dr-section">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- Remaining cat-items -->
+    <div class="cat-section" style="padding-bottom:24px">
+      <div class="cat-list" id="cat-list-b"></div>
+    </div>
+
+  </div><!-- /scroll -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <!-- RTL: first child = rightmost -->
+    <div class="bnav-item">
+      <img src="assets/200acddb-98ec-4f33-951e-c6c7d5d16de7.svg" alt=""
+           onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><path d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'/><circle cx=\'12\' cy=\'7\' r=\'4\'/></svg>'">
+      <span class="bnav-label">حساب کاربری</span>
+    </div>
+    <div class="bnav-item">
+      <img src="assets/e078d9c0-dce3-4ad7-8d9b-0bc9768d13f7.svg" alt=""
+           onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><path d=\'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z\'/><line x1=\'3\' x2=\'21\' y1=\'6\' y2=\'6\'/><path d=\'M16 10a4 4 0 0 1-8 0\'/></svg>'">
+      <span class="bnav-label">سفارش‌ها</span>
+    </div>
+    <div class="bnav-item active">
+      <svg viewBox="0 0 24 24" fill="currentColor" color="#008299"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span class="bnav-label">خانه</span>
+    </div>
+  </nav>
+
+
+  <!-- BOTTOM-SHEET MODAL (reservation / e-visit) -->
+  <div class="sheet-scrim" id="sheetScrim"></div>
+  <div class="sheet" id="sheet" data-flow="reservation" data-step="1">
+    <div class="sheet-handle"><span></span></div>
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="sheetTitle">انتخاب زمان رزرو وقت حضوری</h2>
+      <button class="sheet-back" id="sheetBack" aria-label="مرحله قبل">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+      <button class="sheet-close" id="sheetClose" aria-label="بستن">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+    <div class="sheet-footer">
+      <button class="sheet-cta" id="sheetCta">مرحله بعد</button>
+      <div class="sheet-home"></div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+</div><!-- /shell -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════════ */
+const BASE = 'assets/'; /* assets localized */
+
+const SPECS = [
+  { name:'قلب و عروق',    count:'۸۷',  color:'rgba(239,108,119,.8)', glow:'#0da598', img:'assets/cd58e2f5-b521-41cb-bc4d-d95cf9de0697.png' },
+  { name:'اورولوژی',      count:'۲۱۴', color:'rgba(239,152,108,.8)', glow:'#0d73a5', img:'assets/a1def797-2316-4e3a-a99c-db19fd4a080a.png' },
+  { name:'غدد',           count:'۴۱',  color:'rgba(239,239,108,.8)', glow:'#0d0da5', img:'assets/a0c3b992-bc01-48e0-a2fa-045de1a82cfa.png' },
+  { name:'داخلی',         count:'۳۲۸', color:'rgba(173,239,108,.8)', glow:'#590da5', img:'assets/ecc88aee-cce0-49ff-acb0-66ef8947ee7a.png' },
+  { name:'جراحی پلاستیک', count:'۱۷۶', color:'rgba(108,239,152,.8)', glow:'#a50d73', img:'assets/36542644-e55d-4f0f-8859-0107abebc254.png' },
+  { name:'مغز و اعصاب',   count:'۴۶۲', color:'rgba(108,239,217,.8)', glow:'#a50d27', img:'assets/2e41e04d-1c5c-4b9a-9b05-8f7ec742380a.png' },
+  { name:'زنان',          count:'۹۵',  color:'rgba(108,206,239,.8)', glow:'#a5330d', img:'assets/f59712ac-ebe0-430a-9d42-b7e3637ebe51.png' },
+  { name:'روانشناسی',     count:'۶۳۷', color:'rgba(108,152,239,.8)', glow:'#a5730d', img:'assets/8685afe2-2e9e-42fe-b37f-11d1a06acf77.png' },
+  { name:'چشم',           count:'۲۴۷', color:'rgba(108,239,195,.8)', glow:'#a50d40', img:'assets/6fc4e870-bc95-440c-9861-2404dc8dd528.png' },
+  { name:'عفونی',         count:'۲۸۹', color:'rgba(184,108,239,.8)', glow:'#4da50d', img:'assets/4b09f9a3-3f75-4e76-91f2-b9579374ea4a.png' },
+  { name:'کودکان',        count:'۷۴',  color:'rgba(239,108,239,.8)', glow:'#0da50d', img:'assets/d13733ca-ba92-48d8-a806-fd73508dec09.png' },
+  { name:'پزشکی هسته‌ای', count:'۴۱۱', color:'rgba(239,108,184,.8)', glow:'#0da54d', img:'assets/79738c8d-1242-43a7-b6d3-af20e99bac7c.png' },
+  { name:'گوارش',         count:'۵۵۸', color:'rgba(239,130,108,.8)', glow:'#0d8ca5', img:'assets/bffc3584-1a91-469d-b23e-5ea28a7af2ab.png' },
+  { name:'اورتوپدی',      count:'۳۲',  color:'rgba(239,217,108,.8)', glow:'#0d27a5', img:'assets/b2dfb014-f6a6-4650-8161-ac1d5591124a.png' },
+  { name:'ریه',           count:'۵۰۳', color:'rgba(239,195,108,.8)', glow:'#0d40a5', img:'assets/4fff13a1-075c-4310-a171-c916e24ef742.png' },
+  { name:'تغذیه',         count:'۱۵۳', color:'rgba(130,108,239,.8)', glow:'#8ca50d', img:'assets/3e0cd5cf-a6bd-4ed2-8006-7088be8d7727.png' },
+];
+
+/* slot: [x_offset_from_center, y_offset_from_center, size_px, z-index] */
+const SLOTS = [
+  [  -2.5,    4,   116, 10 ],  // 0: CENTER
+  [   84,  -57.5,   73,  4 ],  // 1
+  [  -72,  -66.5,   63,  3 ],  // 2
+  [ -106,    2.5,   73,  4 ],  // 3
+  [  -75,   80.5,   73,  4 ],  // 4
+  [   -3,   93.5,   43,  2 ],  // 5
+  [   99,   25.5,   73,  4 ],  // 6
+  [  112,   88.5,   35,  2 ],  // 7
+  [  138,  -23.5,   35,  2 ],  // 8
+  [   50, -111.5,   35,  2 ],  // 9
+  [  -47, -121.5,   35,  2 ],  // 10
+  [ -136,   57.5,   35,  2 ],  // 11
+  [ -138,  -58.5,   35,  2 ],  // 12
+  [  -36,  126.5,   23,  1 ],  // 13
+  [   -1,  -90.5,   57,  3 ],  // 14
+  [   55,   83.5,   57,  3 ],  // 15
+];
+
+/* float animation params: [animation-name, duration-s, delay-s] */
+const FLOAT_PARAMS = [
+  ['float-a', 5.2,  0   ],  // 0  center
+  ['float-b', 4.8, -1.3 ],  // 1
+  ['float-c', 6.1, -2.7 ],  // 2
+  ['float-d', 4.4, -0.8 ],  // 3
+  ['float-e', 5.7, -1.9 ],  // 4
+  ['float-f', 4.1, -3.2 ],  // 5
+  ['float-g', 5.5, -0.5 ],  // 6
+  ['float-h', 4.9, -2.1 ],  // 7
+  ['float-a', 6.3, -1.6 ],  // 8
+  ['float-c', 4.7, -3.8 ],  // 9
+  ['float-b', 5.9, -0.3 ],  // 10
+  ['float-e', 4.3, -2.5 ],  // 11
+  ['float-d', 5.1, -1.1 ],  // 12
+  ['float-h', 6.6, -3.5 ],  // 13
+  ['float-f', 4.6, -0.7 ],  // 14
+  ['float-g', 5.3, -2.9 ],  // 15
+];
+
+/* inset glow size relative to bubble size */
+function glowSz(sz){ return `${Math.round(sz * 0.12)}px` }
+
+/* ═══════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════ */
+/* assignment[slotIdx] = specIdx */
+let assignment = SPECS.map((_,i) => i);
+/* which slot index to promote next on auto-tick */
+let nextSlot = 1;
+/* DOM refs: orbitEls[specIdx] = .orbit element */
+const orbitEls = [];
+
+/* ═══════════════════════════════════════════════════════════
+   BUILD DOM
+═══════════════════════════════════════════════════════════ */
+function buildBubble(specIdx, slotIdx) {
+  const sp  = SPECS[specIdx];
+  const sl  = SLOTS[slotIdx];
+  const fp  = FLOAT_PARAMS[slotIdx];
+  const sz  = sl[2];
+
+  /* .orbit */
+  const orbit = document.createElement('div');
+  orbit.className = 'orbit' + (slotIdx === 0 ? ' is-center' : '');
+  orbit.style.left = `calc(50% + ${sl[0]}px)`;
+  orbit.style.top  = `calc(50% + ${sl[1]}px)`;
+  orbit.style.zIndex = sl[3];
+  orbit.dataset.specIdx = specIdx;
+
+  /* .sizer */
+  const sizer = document.createElement('div');
+  sizer.className = 'sizer';
+  sizer.style.width  = sz + 'px';
+  sizer.style.height = sz + 'px';
+
+  /* .floater */
+  const floater = document.createElement('div');
+  floater.className = 'floater';
+  floater.style.animation = `${fp[0]} ${fp[1]}s ease-in-out infinite ${fp[2]}s`;
+
+  /* .glass */
+  const glass = document.createElement('div');
+  glass.className = 'glass';
+  glass.style.setProperty('--overlay', sp.color);
+  glass.style.setProperty('--glow', sp.glow);
+  glass.style.setProperty('--glow-sz', glowSz(sz));
+  glass.innerHTML = `
+    <div class="glass-bg"></div>
+    <div class="glass-color"></div>
+    <div class="glass-shine"></div>
+    <img class="spec-icon" src="${sp.img}" alt="${sp.name}" loading="lazy">
+    <span class="spec-count">${sp.count} پزشک آنلاین</span>
+    <span class="spec-name">${sp.name}</span>`;
+
+  floater.appendChild(glass);
+  sizer.appendChild(floater);
+  orbit.appendChild(sizer);
+
+  orbit.addEventListener('click', () => onBubbleTap(specIdx));
+
+  return { orbit, sizer, glass, floater };
+}
+
+function initField() {
+  const field = document.getElementById('float-field');
+  field.innerHTML = '';
+  assignment.forEach((specIdx, slotIdx) => {
+    const { orbit, sizer, glass, floater } = buildBubble(specIdx, slotIdx);
+    orbitEls[specIdx] = { orbit, sizer, glass, floater };
+    field.appendChild(orbit);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SWAP LOGIC
+═══════════════════════════════════════════════════════════ */
+function getSlotOf(specIdx) {
+  return assignment.indexOf(specIdx);
+}
+
+function swap(slotA, slotB) {
+  if (slotA === slotB) return;
+
+  const specA = assignment[slotA]; // moves to slotB
+  const specB = assignment[slotB]; // moves to slotA
+
+  /* update data */
+  assignment[slotA] = specB;
+  assignment[slotB] = specA;
+
+  const slA = SLOTS[slotA], slB = SLOTS[slotB];
+  const elA = orbitEls[specA], elB = orbitEls[specB];
+
+  /* pause float on both swapping bubbles */
+  if (elA.floater) elA.floater.style.animationPlayState = 'paused';
+  if (elB.floater) elB.floater.style.animationPlayState = 'paused';
+
+  /* clear any existing transition to get correct from-positions */
+  [elA.orbit, elA.sizer, elB.orbit, elB.sizer].forEach(e => e.classList.remove('move'));
+
+  /* force style recalc so browser commits current positions */
+  void elA.orbit.offsetWidth;
+
+  /* enable spring transitions */
+  [elA.orbit, elA.sizer, elB.orbit, elB.sizer].forEach(e => e.classList.add('move'));
+
+  /* apply new positions — CSS transitions animate from old to new */
+  elA.orbit.style.left   = `calc(50% + ${slB[0]}px)`;
+  elA.orbit.style.top    = `calc(50% + ${slB[1]}px)`;
+  elA.orbit.style.zIndex = slB[3];
+  elA.sizer.style.width  = slB[2] + 'px';
+  elA.sizer.style.height = slB[2] + 'px';
+  elA.glass.style.setProperty('--glow-sz', glowSz(slB[2]));
+
+  elB.orbit.style.left   = `calc(50% + ${slA[0]}px)`;
+  elB.orbit.style.top    = `calc(50% + ${slA[1]}px)`;
+  elB.orbit.style.zIndex = slA[3];
+  elB.sizer.style.width  = slA[2] + 'px';
+  elB.sizer.style.height = slA[2] + 'px';
+  elB.glass.style.setProperty('--glow-sz', glowSz(slA[2]));
+
+  /* is-center class */
+  if (slotA === 0) {
+    elA.orbit.classList.remove('is-center');
+    elB.orbit.classList.add('is-center');
+  } else if (slotB === 0) {
+    elB.orbit.classList.remove('is-center');
+    elA.orbit.classList.add('is-center');
+  }
+
+  /* clean up after spring animation completes */
+  setTimeout(() => {
+    [elA.orbit, elA.sizer, elB.orbit, elB.sizer].forEach(e => e.classList.remove('move'));
+    if (elA.floater) elA.floater.style.animationPlayState = '';
+    if (elB.floater) elB.floater.style.animationPlayState = '';
+  }, 720);
+}
+
+/* ── tap handler ─────────────────────────────────── */
+function onBubbleTap(specIdx) {
+  const slotIdx = getSlotOf(specIdx);
+  if (slotIdx === 0) {
+    const catWrap = document.querySelector(`.cat-item-wrap[data-spec-idx="${specIdx}"]`);
+    if (catWrap) {
+      const scrollEl = document.getElementById('scroll');
+      const scrollRect = scrollEl.getBoundingClientRect();
+      const itemRect = catWrap.getBoundingClientRect();
+      const target = scrollEl.scrollTop + itemRect.top - scrollRect.top - 16;
+      scrollEl.scrollTo({ top: target, behavior: 'smooth' });
+    }
+    return;
+  }
+  swap(0, slotIdx);
+  resetTimer();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AUTO-ROTATION
+═══════════════════════════════════════════════════════════ */
+let timer = null;
+
+function tick() {
+  const targetSlot = nextSlot;
+  nextSlot = (nextSlot % 15) + 1;
+  swap(0, targetSlot);
+}
+
+function startTimer() { timer = setInterval(tick, 3000); }
+function resetTimer()  { clearInterval(timer); startTimer(); }
+
+/* ═══════════════════════════════════════════════════════════
+   CATEGORY DATA (16 specialties matching the float bubbles)
+═══════════════════════════════════════════════════════════ */
+const AV1 = 'assets/32e0c4a6-97dd-48a2-a14e-95a1c3705113.jpg';
+const AV2 = 'assets/50912e33-6692-42ae-a287-130beba124c9.jpg';
+const AV3 = 'assets/43e4241d-bd76-4808-b8dc-13834ccf263c.jpg';
+const PHONE_ICON    = 'assets/44aea077-21c3-4fe0-8fd6-4e6358aeb3d7.svg';
+const CALENDAR_ICON = 'assets/b3b775b3-2e5c-457b-b673-d9edb85ec51d.svg';
+const DR_PHOTO      = 'assets/77c069ca-cabe-40d2-aa18-0993644e2e3e.jpg';
+const DR_ICON       = 'assets/bcd94508-30e4-4c5f-a4d1-77fae8f4b7c8.png';
+
+const CATS = [
+  { name:'قلب و عروق',      desc:'بیماری‌های قلبی و عروقی',       count:'+۸۷',  icon:SPECS[0].img  },
+  { name:'اورولوژی',        desc:'بیماری‌های دستگاه ادراری',       count:'+۲۱۴', icon:SPECS[1].img  },
+  { name:'غدد',             desc:'اختلالات هورمونی و متابولیسم',   count:'+۴۱',  icon:SPECS[2].img  },
+  { name:'داخلی',           desc:'بیماری‌های عمومی و داخلی',       count:'+۳۲۸', icon:SPECS[3].img  },
+  { name:'جراحی پلاستیک',   desc:'زیبایی و بازسازی',               count:'+۱۷۶', icon:SPECS[4].img  },
+  { name:'مغز و اعصاب',     desc:'بیماری‌های عصبی و نورولوژی',     count:'+۴۶۲', icon:SPECS[5].img  },
+  { name:'زنان',            desc:'بهداشت و بیماری‌های زنانه',       count:'+۹۵',  icon:SPECS[6].img  },
+  { name:'روانشناسی',       desc:'سلامت روان و مشاوره',             count:'+۶۳۷', icon:SPECS[7].img  },
+  { name:'چشم',             desc:'بیماری‌های چشم و بینایی',         count:'+۲۴۷', icon:SPECS[8].img  },
+  { name:'عفونی',           desc:'بیماری‌های عفونی و واگیر',        count:'+۲۸۹', icon:SPECS[9].img  },
+  { name:'کودکان',          desc:'اطفال و بیماری‌های کودکی',        count:'+۷۴',  icon:SPECS[10].img },
+  { name:'پزشکی هسته‌ای',   desc:'تصویربرداری و رادیولوژی',         count:'+۴۱۱', icon:SPECS[11].img },
+  { name:'گوارش',           desc:'بیماری‌های دستگاه گوارش',         count:'+۵۵۸', icon:SPECS[12].img },
+  { name:'اورتوپدی',        desc:'مشکلات استخوان و مفاصل',          count:'+۳۲',  icon:SPECS[13].img },
+  { name:'ریه',             desc:'بیماری‌های تنفسی و ریوی',         count:'+۵۰۳', icon:SPECS[14].img },
+  { name:'تغذیه',           desc:'رژیم درمانی و تغذیه بالینی',      count:'+۱۵۳', icon:SPECS[15].img },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   BUILD CAT-ITEM (swipeable)
+═══════════════════════════════════════════════════════════ */
+const SNAP_DIST   = 120; /* step-1: px card snaps to */
+const SNAP_THRESH =  60; /* drag needed to commit step-1 */
+const FULL_THRESH =  80; /* additional drag from step-1 to trigger step-2 */
+
+function buildCatItem(cat) {
+  const wrap = document.createElement('div');
+  wrap.className = 'cat-item-wrap';
+
+  wrap.innerHTML = `
+    <div class="swipe-bg swipe-bg-left">
+      <div class="swipe-bg-inner">
+        <img class="swipe-bg-icon" src="${PHONE_ICON}" alt="">
+        <span class="swipe-bg-text">ویزیت آنلاین فوری با<br>اولین پزشک در دسترس</span>
+      </div>
+    </div>
+    <div class="swipe-bg swipe-bg-right">
+      <div class="swipe-bg-inner">
+        <img class="swipe-bg-icon" src="${CALENDAR_ICON}" alt="">
+        <span class="swipe-bg-text">رزرو وقت حضوری با<br>پزشک در سریع‌ترین وقت</span>
+      </div>
+    </div>
+    <div class="cat-card">
+      <img class="cat-icon" src="${cat.icon}" alt="${cat.name}" loading="lazy">
+      <div class="cat-info">
+        <span class="cat-name">${cat.name}</span>
+        <span class="cat-desc">${cat.desc}</span>
+        <div class="cat-bottom">
+          <div class="cat-pill">
+            <span>${cat.count} پزشک فعال</span>
+            <div class="cat-dot">
+              <div class="cat-dot-outer"></div>
+              <div class="cat-dot-inner"></div>
+            </div>
+          </div>
+          <div class="cat-avs" style="margin-right:4px">
+            <div class="cat-av" style="--az:3"><img src="${AV1}" alt="" loading="lazy"></div>
+            <div class="cat-av" style="--az:2"><img src="${AV2}" alt="" loading="lazy"></div>
+            <div class="cat-av" style="--az:1"><img src="${AV3}" alt="" loading="lazy"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  attachSwipe(wrap.querySelector('.cat-card'));
+  return wrap;
+}
+
+/* ── pointer-based swipe ────────────────────────── */
+function attachSwipe(card) {
+  const wrap    = card.parentElement;
+  const bgLeft  = wrap.querySelector('.swipe-bg-left');
+  const bgRight = wrap.querySelector('.swipe-bg-right');
+  let startX = 0, dragging = false, snapped = 0;
+
+  function flyOff(dir) {
+    /* state 2 — full swipe: left→green→e-visit, right→teal→reservation */
+    openSheet(dir < 0 ? 'evisit' : 'reservation');
+    card.classList.remove('snapping');
+    card.classList.add('flying');
+    card.style.transform = `translateX(${dir * (window.innerWidth + 60)}px)`;
+    bgLeft.style.zIndex  = 0;
+    bgRight.style.zIndex = 0;
+    setTimeout(() => {
+      card.classList.remove('flying');
+      card.style.transition = 'none';
+      card.style.transform  = 'translateX(0)';
+      snapped = 0;
+      requestAnimationFrame(() => { card.style.transition = ''; });
+    }, 300);
+  }
+
+  card.addEventListener('pointerdown', e => {
+    startX = e.clientX;
+    dragging = true;
+    card.setPointerCapture(e.pointerId);
+    card.classList.remove('snapping', 'flying');
+  });
+
+  card.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const rawDx = e.clientX - startX;
+    const dx    = rawDx + snapped;
+    const sameAsSnap = snapped !== 0 && ((snapped < 0 && rawDx < 0) || (snapped > 0 && rawDx > 0));
+    const limit = sameAsSnap ? window.innerWidth : SNAP_DIST + 10;
+    const clamped = Math.max(-limit, Math.min(limit, dx));
+    card.style.transform = `translateX(${clamped}px)`;
+    bgLeft.style.zIndex  = clamped < 0 ? 1 : 0;
+    bgRight.style.zIndex = clamped > 0 ? 1 : 0;
+  });
+
+  card.addEventListener('pointerup', e => {
+    if (!dragging) return;
+    dragging = false;
+    const dx = e.clientX - startX;
+
+    /* normal tap on a resting card → open the doctor list */
+    if (snapped === 0 && Math.abs(dx) < 8) { location.href = 'dr-list.html'; return; }
+
+    card.classList.add('snapping');
+
+    if (snapped !== 0) {
+      const sameDir = (snapped < 0 && dx < 0) || (snapped > 0 && dx > 0);
+      if (sameDir && Math.abs(dx) >= FULL_THRESH) {
+        flyOff(snapped < 0 ? -1 : 1);
+        return;
+      }
+      if (!sameDir || Math.abs(dx) < 8) snapped = 0;
+    } else {
+      if      (dx < -SNAP_THRESH) snapped = -SNAP_DIST;
+      else if (dx >  SNAP_THRESH) snapped =  SNAP_DIST;
+      else                        snapped = 0;
+    }
+    card.style.transform = `translateX(${snapped}px)`;
+  });
+
+  /* state 1 — tap the revealed under-layer to trigger its action */
+  function snapBack(){ snapped = 0; card.classList.add('snapping'); card.style.transform = 'translateX(0)'; bgLeft.style.zIndex = 0; bgRight.style.zIndex = 0; }
+  bgLeft.addEventListener('click',  () => { openSheet('evisit');      snapBack(); });
+  bgRight.addEventListener('click', () => { openSheet('reservation'); snapBack(); });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUILD CATEGORY LISTS
+═══════════════════════════════════════════════════════════ */
+function buildCatLists() {
+  const listA = document.getElementById('cat-list-a');
+  const listB = document.getElementById('cat-list-b');
+  CATS.slice(0, 6).forEach((c, i) => {
+    const w = buildCatItem(c);
+    w.dataset.specIdx = i;
+    listA.appendChild(w);
+  });
+  CATS.slice(6).forEach((c, i) => {
+    const w = buildCatItem(c);
+    w.dataset.specIdx = i + 6;
+    listB.appendChild(w);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DOCTOR CAROUSEL
+═══════════════════════════════════════════════════════════ */
+const DOCS = [
+  { name:'دکتر کمال کامیابی نیا', spec:'پزشک عمومی',    rating:'۴٫۵', reviews:'۳۴۲۷', exp:'۱۶' },
+  { name:'دکتر سارا رضایی',       spec:'نورولوژی',      rating:'۴٫۸', reviews:'۱۲۸۱', exp:'۱۲' },
+  { name:'دکتر علی محمدی',        spec:'قلب و عروق',    rating:'۴٫۹', reviews:'۵۶۱۱', exp:'۲۰' },
+  { name:'دکتر مریم احمدی',       spec:'کودکان',        rating:'۴٫۷', reviews:'۸۹۴',  exp:'۹'  },
+];
+
+function buildDrSection() {
+  const sec = document.getElementById('dr-section');
+  const cards = DOCS.map(d => `
+    <div class="dr-card">
+      <div class="dr-photo-wrap">
+        <div class="dr-photo"><img src="${DR_PHOTO}" alt="${d.name}" loading="lazy"></div>
+        <span class="dr-badge">فعال</span>
+      </div>
+      <div class="dr-info">
+        <p class="dr-name">${d.name}</p>
+        <p class="dr-spec">${d.spec}</p>
+        <div class="dr-meta">
+          <span>⭐ <strong>${d.rating}</strong> (${d.reviews}+)</span>
+          <div class="dr-sep"></div>
+          <span>💼 <strong>${d.exp}</strong> سال تجربه</span>
+        </div>
+      </div>
+    </div>`).join('');
+
+  sec.innerHTML = `
+    <div class="dr-title">
+      <p class="dr-title-text">برترین پزشکان قلب و عروق ایران</p>
+      <img class="dr-title-icon" src="${DR_ICON}" alt="">
+    </div>
+    <div class="dr-carousel">${cards}</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+initField();
+buildCatLists();
+buildDrSection();
+startTimer();
+
+/* ═══════════════════════════════════════════════════════════
+   BOTTOM-SHEET MODAL (reservation / e-visit)
+   openSheet('reservation') — teal flow (time picker) → payment.html?type=reservation
+   openSheet('evisit')      — green flow (visit type → time picker) → payment.html?type=evisit
+═══════════════════════════════════════════════════════════ */
+const SHEET_DAYS = [['شنبه','۲۰ تیر'],['یکشنبه','۲۱ تیر'],['دوشنبه','۲۲ تیر'],['سه‌شنبه','۲۳ تیر'],['چهارشنبه','۲۴ تیر'],['پنجشنبه','۲۵ تیر'],['جمعه','۲۶ تیر']];
+const SHEET_SLOTS = ['۰۹:۰۰ تا ۰۹:۳۰','۰۹:۳۰ تا ۱۰:۰۰','۱۰:۰۰ تا ۱۰:۳۰','۱۰:۳۰ تا ۱۱:۰۰','۱۱:۰۰ تا ۱۱:۳۰','۱۱:۳۰ تا ۱۲:۰۰','۱۶:۰۰ تا ۱۶:۳۰','۱۶:۳۰ تا ۱۷:۰۰'];
+const SHEET_VISITS = ['ویزیت آنلاین فوری','ویزیت آنلاین در زمان تعیین شده','مشاوره متنی','ویزیت تصویری'];
+function sheetRenderTime(){
+  const days=SHEET_DAYS.map((d,i)=>`<div class="day-chip${i===1?' sel':''}" data-day="${i}"><span class="day-chip-name">${d[0]}</span><span class="day-chip-date">${d[1]}</span></div>`).join('');
+  const slots=SHEET_SLOTS.map((s,i)=>`<div class="ts-row${i===0?' sel':''}" data-slot="${i}"><span class="ts-radio"></span><span class="ts-label">ساعت ${s}</span></div>`).join('');
+  return `<div class="day-row">${days}</div><div class="ts-list">${slots}</div>`;
+}
+function sheetRenderVisits(){
+  return `<div class="vt-list">${SHEET_VISITS.map((t,i)=>`<div class="vt-row${i===0?' sel':''}" data-visit="${i}"><span class="vt-radio"></span><span class="vt-title">${t}</span><div class="vt-price"><span class="vt-price-now">۱۹۸٬۰۰۰ تومان</span><span class="vt-price-old">۳۲۱٬۰۰۰ تومان</span></div></div>`).join('')}</div>`;
+}
+const _sheet = document.getElementById('sheet');
+const _scrim = document.getElementById('sheetScrim');
+const _sheetBody = document.getElementById('sheetBody');
+const _sheetTitle = document.getElementById('sheetTitle');
+let _sheetFlow = 'reservation', _sheetStep = 1;
+function _renderSheet(){
+  _sheet.dataset.flow = _sheetFlow; _sheet.dataset.step = _sheetStep;
+  if(_sheetFlow === 'reservation'){ _sheetTitle.textContent = 'انتخاب زمان رزرو وقت حضوری'; _sheetBody.innerHTML = sheetRenderTime(); }
+  else { _sheetTitle.textContent = 'انتخاب نوع ویزیت آنلاین'; _sheetBody.innerHTML = _sheetStep === 1 ? sheetRenderVisits() : sheetRenderTime(); }
+  _sheetBody.scrollTop = 0;
+}
+function openSheet(flow){ _sheetFlow = flow; _sheetStep = 1; _renderSheet(); _scrim.classList.add('open'); _sheet.classList.add('open'); }
+function closeSheet(){ _scrim.classList.remove('open'); _sheet.classList.remove('open'); }
+function _sheetNext(){
+  if(_sheetFlow === 'reservation'){ location.href = 'payment.html?type=reservation'; }
+  else if(_sheetStep === 1){ _sheetStep = 2; _renderSheet(); }
+  else { location.href = 'payment.html?type=evisit'; }
+}
+function _sheetBackStep(){ if(_sheetStep === 2){ _sheetStep = 1; _renderSheet(); } }
+_sheetBody.addEventListener('click', e => {
+  const day = e.target.closest('.day-chip'), slot = e.target.closest('.ts-row'), vis = e.target.closest('.vt-row');
+  if(day){ _sheetBody.querySelectorAll('.day-chip').forEach(x=>x.classList.remove('sel')); day.classList.add('sel'); }
+  if(slot){ _sheetBody.querySelectorAll('.ts-row').forEach(x=>x.classList.remove('sel')); slot.classList.add('sel'); }
+  if(vis){ _sheetBody.querySelectorAll('.vt-row').forEach(x=>x.classList.remove('sel')); vis.classList.add('sel'); }
+});
+document.getElementById('sheetCta').addEventListener('click', _sheetNext);
+document.getElementById('sheetClose').addEventListener('click', closeSheet);
+document.getElementById('sheetBack').addEventListener('click', _sheetBackStep);
+_scrim.addEventListener('click', closeSheet);
+
+</script>
+</body>
+</html>

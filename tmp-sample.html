@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocVisit — Find Your Doctor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ───────────────────────────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#ededf6;
+  --text:#111827;
+  --muted:rgba(17,24,39,.5);
+  --indigo:#6366f1;
+  --card:#ffffffd9;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
+  color:var(--text);font-family:'Inter',-apple-system,sans-serif}
+
+/* Slowly rotating nebula — very subtle on light bg */
+#nebula{
+  position:fixed;inset:-60%;width:220%;height:220%;
+  z-index:0;pointer-events:none;
+  background:conic-gradient(
+    from 0deg at 58% 50%,
+    rgba(99,102,241,.035) 0deg,
+    rgba(168,85,247,.022) 80deg,
+    rgba(236,72,153,.012) 150deg,
+    rgba(20,184,166,.01) 210deg,
+    rgba(6,182,212,.016) 260deg,
+    rgba(99,102,241,.028) 320deg,
+    rgba(99,102,241,.035) 360deg
+  );
+  animation:nspin 80s linear infinite
+}
+@keyframes nspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+#canvas-wrap{position:fixed;inset:0;z-index:1}
+canvas{display:block}
+
+/* Vignette — very light on light theme */
+#vg{
+  position:fixed;inset:0;pointer-events:none;z-index:2;
+  background:radial-gradient(ellipse at 62% 50%,transparent 28%,rgba(210,210,230,.3) 100%)
+}
+
+/* Desktop: left gradient for text legibility */
+#lg{
+  position:fixed;left:0;top:0;bottom:0;width:640px;
+  background:linear-gradient(to right,
+    rgba(237,237,246,.97) 0%,
+    rgba(237,237,246,.78) 52%,
+    transparent 100%);
+  pointer-events:none;z-index:3
+}
+
+/* Mobile: bottom fade for card legibility */
+#lg-mob{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;height:300px;
+  background:linear-gradient(to top,
+    rgba(237,237,246,.98) 0%,
+    rgba(237,237,246,.75) 45%,
+    transparent 100%);
+  pointer-events:none;z-index:3
+}
+/* Mobile: top fade so nav + hero text are readable */
+#lg-top-mob{
+  display:none;
+  position:fixed;top:0;left:0;right:0;height:240px;
+  background:linear-gradient(to bottom,
+    rgba(237,237,246,.97) 0%,
+    rgba(237,237,246,.72) 52%,
+    transparent 100%);
+  pointer-events:none;z-index:3
+}
+
+/* Cursor glow */
+#cg{
+  position:fixed;width:260px;height:260px;border-radius:50%;
+  pointer-events:none;z-index:2;
+  background:radial-gradient(circle,rgba(99,102,241,.07) 0%,transparent 70%);
+  transform:translate(-50%,-50%);opacity:0;transition:opacity .4s
+}
+
+/* UI overlay */
+#ui{position:fixed;inset:0;z-index:10;pointer-events:none}
+
+/* ── NAV ─────────────────────────────────────────────────────────────────── */
+nav{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 48px;pointer-events:all
+}
+.logo{display:flex;align-items:center;gap:9px;
+  font-size:18px;font-weight:800;letter-spacing:-.4px;color:var(--text)}
+.logo-icon{
+  width:31px;height:31px;border-radius:8px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:#fff
+}
+.nav-r{display:flex;align-items:center;gap:24px}
+.nav-r a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
+.nav-r a:hover{color:var(--text)}
+.nav-btn{
+  background:var(--indigo)!important;border-radius:100px;
+  padding:8px 20px;color:#fff!important;font-weight:600!important;
+  font-size:13px!important;box-shadow:0 4px 14px rgba(99,102,241,.3)
+}
+
+/* ── HERO ────────────────────────────────────────────────────────────────── */
+.hero{
+  position:absolute;left:48px;top:50%;transform:translateY(-50%);
+  max-width:460px;pointer-events:all
+}
+.badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);
+  border-radius:100px;padding:5px 13px;font-size:12px;font-weight:600;
+  color:var(--indigo);margin-bottom:20px
+}
+.badge-dot{width:6px;height:6px;background:var(--indigo);border-radius:50%;
+  animation:blink 2s ease infinite}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+h1{font-size:clamp(40px,4.4vw,64px);font-weight:800;
+  line-height:1.06;letter-spacing:-2.5px;margin-bottom:16px;color:var(--text)}
+h1 em{font-style:normal;
+  background:linear-gradient(135deg,#6366f1 0%,#a855f7 50%,#ec4899 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{font-size:16px;color:var(--muted);line-height:1.65;
+  margin-bottom:30px;max-width:350px}
+.btns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn-p{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;
+  border:none;border-radius:100px;padding:14px 28px;font-size:15px;
+  font-weight:600;cursor:pointer;transition:all .25s;
+  box-shadow:0 8px 24px rgba(99,102,241,.32)
+}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(99,102,241,.42)}
+.btn-s{
+  background:rgba(255,255,255,.7);color:var(--text);
+  border:1px solid rgba(99,102,241,.18);border-radius:100px;
+  padding:14px 22px;font-size:15px;font-weight:500;cursor:pointer;
+  transition:all .25s;backdrop-filter:blur(10px)
+}
+.btn-s:hover{background:rgba(255,255,255,.95)}
+
+.stats{display:flex;gap:26px;margin-top:34px}
+.stat-val{font-size:22px;font-weight:800;letter-spacing:-1px;color:var(--text)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── DOCTOR CARD ─────────────────────────────────────────────────────────── */
+#doc-card{
+  position:absolute;bottom:62px;left:50%;transform:translateX(-50%);
+  pointer-events:all;transition:opacity .25s ease
+}
+.card-inner{
+  display:flex;align-items:center;gap:13px;
+  background:var(--card);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(99,102,241,.13);border-radius:20px;
+  padding:13px 17px;min-width:370px;
+  box-shadow:0 8px 28px rgba(99,102,241,.09),0 1px 4px rgba(0,0,0,.07)
+}
+#card-av{width:50px;height:50px;border-radius:50%;flex-shrink:0;overflow:hidden}
+.card-info{flex:1}
+.card-info h3{font-size:15px;font-weight:700;letter-spacing:-.2px;
+  margin-bottom:3px;color:var(--text)}
+#card-spec{display:inline-block;font-size:11px;font-weight:600;
+  padding:2px 9px;border-radius:100px;border:1px solid;margin-bottom:5px}
+.card-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.avail{width:6px;height:6px;background:#22c55e;border-radius:50%;flex-shrink:0;
+  box-shadow:0 0 0 2px rgba(34,197,94,.2);animation:pg 2s ease infinite}
+@keyframes pg{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}
+  50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
+.bk-btn{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;
+  border:none;border-radius:11px;padding:11px 18px;font-size:13px;
+  font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;
+  box-shadow:0 4px 12px rgba(99,102,241,.28)
+}
+.bk-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(99,102,241,.38)}
+
+/* ── SPECIALTY PILLS ─────────────────────────────────────────────────────── */
+#pills{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  display:flex;gap:7px;pointer-events:all;flex-wrap:wrap;justify-content:center
+}
+.pill{
+  background:rgba(255,255,255,.6);border:1px solid rgba(99,102,241,.12);
+  border-radius:100px;padding:6px 13px;font-size:12px;font-weight:500;
+  color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap
+}
+.pill:hover,.pill.on{background:rgba(99,102,241,.09);
+  border-color:rgba(99,102,241,.28);color:var(--indigo)}
+
+/* ── DOTS ────────────────────────────────────────────────────────────────── */
+#dots{
+  position:absolute;top:20px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;pointer-events:none
+}
+.dot{width:5px;height:5px;border-radius:50%;
+  background:rgba(99,102,241,.22);transition:all .4s ease}
+.dot.on{background:var(--indigo);width:16px;border-radius:3px}
+
+/* ── MOBILE FIRST ────────────────────────────────────────────────────────── */
+@media(max-width:767px){
+  #lg{display:none}
+  #lg-mob{display:block}
+  #lg-top-mob{display:block}
+
+  nav{padding:14px 18px}
+  .nav-r a:not(.nav-btn){display:none}
+  .logo-icon{width:28px;height:28px;font-size:13px}
+  .logo{font-size:16px}
+
+  /* Hero: sits at the TOP of screen below nav */
+  .hero{
+    position:absolute;
+    left:50%;top:64px;
+    bottom:auto;
+    transform:translateX(-50%);
+    text-align:center;max-width:88vw
+  }
+  .badge{display:none}
+  h1{font-size:30px;letter-spacing:-1.5px;margin-bottom:12px}
+  /* Hide sub & stats on mobile to save vertical space */
+  .sub{display:none}
+  .stats{display:none}
+  .btns{justify-content:center;gap:8px}
+  .btn-p{padding:12px 22px;font-size:14px}
+  .btn-s{padding:12px 18px;font-size:14px}
+
+  #doc-card{bottom:48px;width:92vw;max-width:380px}
+  .card-inner{min-width:unset;width:100%}
+  #pills{display:none}
+  #dots{display:none}
+}
+
+@media(max-width:400px){
+  h1{font-size:26px}
+  .btn-p{padding:11px 18px}
+  .btn-s{display:none}
+}
+</style>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.158.0/build/three.module.js"}}
+</script>
+</head>
+<body>
+
+<div id="nebula"></div>
+<div id="canvas-wrap"></div>
+<div id="cg"></div>
+<div id="vg"></div>
+<div id="lg"></div>
+<div id="lg-mob"></div>
+<div id="lg-top-mob"></div>
+
+<div id="ui">
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">⚕</div>
+      DocVisit
+    </div>
+    <div class="nav-r">
+      <a href="#">Specialties</a>
+      <a href="#">How it works</a>
+      <a href="#">For Doctors</a>
+      <a href="#" class="nav-btn">Sign In</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="badge"><span class="badge-dot"></span>12 doctors online now</div>
+    <h1>Your Doctor,<br><em>Right Here.</em></h1>
+    <p class="sub">Connect with top-rated specialists instantly. E-visit from anywhere — no waiting room required.</p>
+    <div class="btns">
+      <button class="btn-p">Book an E-Visit</button>
+      <button class="btn-s">Browse All</button>
+    </div>
+    <div class="stats">
+      <div><div class="stat-val">50k+</div><div class="stat-lbl">Consultations</div></div>
+      <div><div class="stat-val">4.9★</div><div class="stat-lbl">Avg Rating</div></div>
+      <div><div class="stat-val">&lt;15m</div><div class="stat-lbl">Avg Wait</div></div>
+    </div>
+  </div>
+
+  <div id="doc-card">
+    <div class="card-inner">
+      <div id="card-av"></div>
+      <div class="card-info">
+        <h3 id="card-name">Dr. Sarah Chen</h3>
+        <span id="card-spec">Cardiologist</span>
+        <div class="card-meta">
+          <span class="avail"></span>
+          <span id="card-wait">~12 min</span>
+          <span>·</span>
+          <span id="card-rev">847 reviews</span>
+          <span>·</span>
+          <span id="card-exp">15 yrs</span>
+        </div>
+      </div>
+      <button class="bk-btn">Book Now →</button>
+    </div>
+  </div>
+
+  <div id="pills">
+    <span class="pill on">All</span>
+    <span class="pill">Cardiology</span>
+    <span class="pill">Neurology</span>
+    <span class="pill">Dermatology</span>
+    <span class="pill">Pediatrics</span>
+    <span class="pill">Psychiatry</span>
+    <span class="pill">Oncology</span>
+  </div>
+
+  <div id="dots"></div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const DOCS = [
+  {name:"Dr. Sarah Chen",    spec:"Cardiologist",      rev:847, wait:"~12 min",exp:"15 yrs",c1:"#6366f1",c2:"#8b5cf6"},
+  {name:"Dr. James Wilson",  spec:"Neurologist",       rev:623, wait:"~25 min",exp:"12 yrs",c1:"#ec4899",c2:"#f43f5e"},
+  {name:"Dr. Emily Park",    spec:"Dermatologist",     rev:512, wait:"~18 min",exp:"9 yrs", c1:"#14b8a6",c2:"#06b6d4"},
+  {name:"Dr. Michael Ross",  spec:"Pediatrician",      rev:934, wait:"~8 min", exp:"20 yrs",c1:"#f59e0b",c2:"#f97316"},
+  {name:"Dr. Aisha Johnson", spec:"Psychiatrist",      rev:445, wait:"~35 min",exp:"11 yrs",c1:"#a855f7",c2:"#7c3aed"},
+  {name:"Dr. Lena Fischer",  spec:"Ophthalmologist",   rev:388, wait:"~20 min",exp:"8 yrs", c1:"#22c55e",c2:"#16a34a"},
+  {name:"Dr. Omar Hassan",   spec:"Orthopedist",       rev:291, wait:"~30 min",exp:"14 yrs",c1:"#0ea5e9",c2:"#3b82f6"},
+  {name:"Dr. Yuki Tanaka",   spec:"Endocrinologist",   rev:567, wait:"~22 min",exp:"13 yrs",c1:"#f43f5e",c2:"#be123c"},
+  {name:"Dr. Carlos Vega",   spec:"Pulmonologist",     rev:712, wait:"~15 min",exp:"18 yrs",c1:"#84cc16",c2:"#65a30d"},
+  {name:"Dr. Nina Patel",    spec:"Gastroenterologist",rev:389, wait:"~28 min",exp:"10 yrs",c1:"#f97316",c2:"#ea580c"},
+  {name:"Dr. Alex Kim",      spec:"Radiologist",       rev:456, wait:"~40 min",exp:"16 yrs",c1:"#06b6d4",c2:"#0891b2"},
+  {name:"Dr. Sophie Miller", spec:"Oncologist",        rev:678, wait:"~45 min",exp:"22 yrs",c1:"#8b5cf6",c2:"#6d28d9"},
+];
+
+// ── TEXTURE GENERATORS ────────────────────────────────────────────────────────
+function makeAvatarTex(doc, px, focused) {
+  const c = document.createElement('canvas');
+  c.width = c.height = px;
+  const ctx = c.getContext('2d');
+  const half = px/2, R = half - 2;
+
+  ctx.save();
+  ctx.beginPath(); ctx.arc(half,half,R,0,Math.PI*2); ctx.clip();
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0,0,px,px);
+  bg.addColorStop(0, doc.c1); bg.addColorStop(1, doc.c2);
+  ctx.fillStyle = bg; ctx.fillRect(0,0,px,px);
+
+  // Subtle dot noise
+  ctx.globalAlpha = .055;
+  for(let i=0;i<px;i+=6) for(let j=0;j<px;j+=6){ctx.fillStyle='#fff';ctx.fillRect(i,j,1,1);}
+  ctx.globalAlpha = 1;
+
+  // Inner shimmer
+  const sh = ctx.createRadialGradient(half*.65,half*.5,0,half,half,R);
+  sh.addColorStop(0,'rgba(255,255,255,.32)');
+  sh.addColorStop(.6,'rgba(255,255,255,.06)');
+  sh.addColorStop(1,'rgba(0,0,0,.18)');
+  ctx.fillStyle = sh; ctx.fillRect(0,0,px,px);
+
+  // Initials
+  const initials = doc.name.split(' ').slice(1).map(n=>n[0]).join('');
+  const yShift = focused ? -px*.08 : 0;
+  ctx.fillStyle = 'rgba(255,255,255,.95)';
+  ctx.font = `800 ${px*.3}px Inter,-apple-system,sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,.22)'; ctx.shadowBlur = 8;
+  ctx.fillText(initials, half, half + yShift);
+  ctx.shadowBlur = 0;
+
+  if(focused) {
+    ctx.fillStyle = 'rgba(255,255,255,.78)';
+    ctx.font = `500 ${px*.088}px Inter,-apple-system,sans-serif`;
+    ctx.fillText(doc.name.replace('Dr. ','Dr '), half, half + px*.2);
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.font = `400 ${px*.074}px Inter,-apple-system,sans-serif`;
+    ctx.fillText(doc.spec, half, half + px*.3);
+  }
+
+  ctx.restore();
+
+  // Border ring
+  ctx.beginPath(); ctx.arc(half,half,R-1,0,Math.PI*2);
+  ctx.strokeStyle = focused ? 'rgba(255,255,255,.8)' : 'rgba(255,255,255,.32)';
+  ctx.lineWidth = focused ? px*.024 : px*.016;
+  ctx.stroke();
+
+  return new THREE.CanvasTexture(c);
+}
+
+
+// ── SCENE SETUP ───────────────────────────────────────────────────────────────
+let W = window.innerWidth, H = window.innerHeight;
+
+const scene  = new THREE.Scene();
+const cam    = new THREE.OrthographicCamera(-W/2,W/2,H/2,-H/2,-1000,1000);
+cam.position.z = 100;
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setSize(W,H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setClearColor(0x000000,0);
+document.getElementById('canvas-wrap').appendChild(renderer.domElement);
+
+// ── RESPONSIVE CLUSTER PARAMS ─────────────────────────────────────────────────
+const isMob = () => W < 768;
+
+function clusterParams() {
+  const m = isMob();
+  // Mobile: cluster lives in the middle vertical band.
+  // Hero text is at top (~64-160px from top screen).
+  // Card is at bottom (~48-170px from bottom screen).
+  // We want cluster center at roughly 45% from top.
+  // In world coords: y = H/2 - screen_y, so screen_y=45%H → y = H/2 - 0.45H = 0.05H (slightly above center)
+  const mobCY = m ? H * .05 : 0;   // slightly above center in world coords
+  return {
+    cx:   m ? 0         : W * .13,
+    cy:   mobCY,
+    rx:   m ? Math.min(W*.34, 132) : Math.min(W*.24, 305),
+    ry:   m ? Math.min(H*.16, 130) : Math.min(H*.28, 205),
+    szSm: m ? 56 : 82,
+    szLg: m ? 122 : 184,
+  };
+}
+let CP = clusterParams();
+
+// ── RANDOM SIZE FACTORS (persistent per doctor) ────────────────────────────────
+// Each unfocused bubble has a unique size: 0.58 → 1.18 of szSm
+const SF = DOCS.map(() => .58 + Math.random() * .6);
+
+// ── PARTICLES ─────────────────────────────────────────────────────────────────
+const PC = 550;
+const pPos = new Float32Array(PC * 3);
+const pVel = new Float32Array(PC * 2); // vx,vy
+const pNoise = [];
+
+for(let i=0; i<PC; i++) {
+  pPos[i*3]   = (Math.random()-.5) * W * 1.6;
+  pPos[i*3+1] = (Math.random()-.5) * H * 1.6;
+  pPos[i*3+2] = (Math.random()-.5) * 180;
+  pVel[i*2]   = (Math.random()-.5) * .12;
+  pVel[i*2+1] = (Math.random()-.5) * .12;
+  pNoise.push({
+    ph:Math.random()*Math.PI*2, fr:.1+Math.random()*.28,
+    am:2.5+Math.random()*6,
+    ph2:Math.random()*Math.PI*2,
+  });
+}
+
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+
+const pMat = new THREE.PointsMaterial({
+  color:0x6366f1, size:1.8, transparent:true,
+  opacity:.26, sizeAttenuation:false, depthWrite:false
+});
+scene.add(new THREE.Points(pGeo, pMat));
+
+// ── HOME POSITIONS ────────────────────────────────────────────────────────────
+function homePos(i, total, cp) {
+  const angle = (i / total) * Math.PI * 2;
+  const rf    = .8 + Math.sin(i * 1.618) * .22;
+  const a2    = angle + Math.sin(i * 2.3) * .22;
+  return {
+    x: cp.cx + Math.cos(a2) * cp.rx * rf,
+    y: cp.cy + Math.sin(a2) * cp.ry * rf,
+  };
+}
+
+// ── BUBBLE CLASS ──────────────────────────────────────────────────────────────
+class Bubble {
+  constructor(doc, idx) {
+    this.doc     = doc;
+    this.idx     = idx;
+    this.focused = false;
+    this.sf      = SF[idx];          // unique size factor
+
+    const hp = homePos(idx, DOCS.length, CP);
+    this.x = hp.x;  this.y = hp.y;
+    this.vx = 0;    this.vy = 0;
+    this.scale  = 1; this.tScale = 1;
+    this.alpha  = 1; this.tAlpha = .9;
+    this.hover  = 0; this.tHover = 0;
+    this.pulsing = false; this.pulseT = 0;
+    this.tx = this.x; this.ty = this.y;
+
+    // Floating noise — original levels restored
+    this.np  = Math.random() * Math.PI * 2;
+    this.np2 = Math.random() * Math.PI * 2;
+    this.nf  = .25 + Math.random() * .35;
+    this.nf2 = .18 + Math.random() * .28;
+    this.na  = 7   + Math.random() * 10;
+
+    // Orbit: alternating CW/CCW per bubble for natural look
+    this.orbitDir = (idx % 2 === 0) ? 1 : -1;
+
+    // Cached textures
+    this._smTx = null; this._lgTx = null;
+
+    this._build();
+  }
+
+  _avTex(foc) {
+    if(foc) { if(!this._lgTx) this._lgTx = makeAvatarTex(this.doc, CP.szLg*2, true); return this._lgTx; }
+    if(!this._smTx) this._smTx = makeAvatarTex(this.doc, CP.szSm*2, false);
+    return this._smTx;
+  }
+
+  _build() {
+    const sz = CP.szSm * this.sf;
+    this.spr = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: this._avTex(false), transparent:true, depthWrite:false
+    }));
+    this.spr.scale.set(sz, sz, 1);
+    this._place(this.x, this.y);
+    scene.add(this.spr);
+  }
+
+  _place(x, y) {
+    this.spr.position.set(x, y, this.focused ? 10 : 0);
+  }
+
+  setFocused(v) {
+    this.focused = v;
+    if(v) {
+      this.tx = CP.cx; this.ty = CP.cy;
+      this.tScale = CP.szLg / (CP.szSm * this.sf);
+      this.tAlpha = 1;
+      this.pulsing = true; this.pulseT = 0;
+      this.tHover = 0; this.hover = 0;
+      this.spr.material.map = this._avTex(true);
+    } else {
+      const hp = homePos(this.idx, DOCS.length, CP);
+      this.tx = hp.x; this.ty = hp.y;
+      this.tScale = 1; this.tAlpha = .88;
+      this.spr.material.map = this._avTex(false);
+    }
+    this.spr.material.needsUpdate = true;
+  }
+
+  update(t, focusedBubble) {
+    // Spring toward home — slightly softer so noise can breathe
+    const spring = this.focused ? .07 : .026;
+    this.vx += (this.tx - this.x) * spring;
+    this.vy += (this.ty - this.y) * spring;
+
+    // Floating noise — original amplitude restored
+    const fa = this.focused ? this.na * .15 : this.na;
+    this.vx += Math.sin(t * this.nf  + this.np)  * fa * .013;
+    this.vy += Math.cos(t * this.nf2 + this.np2) * fa * .013;
+
+    // Orbit around focused bubble (unfocused only)
+    if(!this.focused && focusedBubble) {
+      const dx = this.x - focusedBubble.x;
+      const dy = this.y - focusedBubble.y;
+      const dist = Math.hypot(dx, dy);
+      if(dist > 30) {
+        const nx = dx / dist;
+        const ny = dy / dist;
+        // Tangential force — perpendicular to radial = slow orbit
+        // alternating CW/CCW per bubble; magnitude ~0.035 px/frame
+        this.vx += (-ny) * .035 * this.orbitDir;
+        this.vy += ( nx) * .035 * this.orbitDir;
+        // Very light centripetal pull so they stay loosely near cluster
+        const pull = Math.min(.018, 1.8 / dist);
+        this.vx -= nx * pull;
+        this.vy -= ny * pull;
+      }
+    }
+
+    this.vx *= .875; this.vy *= .875;
+    this.x  += this.vx; this.y += this.vy;
+
+    this.scale += (this.tScale - this.scale) * .07;
+    this.alpha += (this.tAlpha - this.alpha) * .08;
+    this.hover += (this.tHover - this.hover) * .1;
+
+    // Brief overshoot pulse on focus
+    let pb = 0;
+    if(this.pulsing) {
+      this.pulseT += .055;
+      pb = Math.sin(this.pulseT * Math.PI) * .14;
+      if(this.pulseT >= 1) { this.pulsing = false; this.pulseT = 0; }
+    }
+
+    const hb = this.focused ? 0 : this.hover * .1;
+    const sz  = CP.szSm * this.sf * (this.scale + pb + hb);
+
+    this.spr.scale.set(sz, sz, 1);
+    this.spr.material.opacity = this.alpha;
+    this._place(this.x, this.y);
+  }
+}
+
+// ── CONSTELLATION LINES ───────────────────────────────────────────────────────
+const MAX_SEGS = 28;
+const segPos   = new Float32Array(MAX_SEGS * 6);
+const segGeo   = new THREE.BufferGeometry();
+segGeo.setAttribute('position', new THREE.BufferAttribute(segPos, 3));
+segGeo.setDrawRange(0, 0);
+const segMat   = new THREE.LineBasicMaterial({
+  color:0x6366f1, transparent:true, opacity:.08, depthWrite:false
+});
+const segs = new THREE.LineSegments(segGeo, segMat);
+segs.frustumCulled = false; segs.renderOrder = -1;
+scene.add(segs);
+
+function updateLines() {
+  let n = 0;
+  for(let i=0; i<bubbles.length && n<MAX_SEGS; i++) {
+    for(let j=i+1; j<bubbles.length && n<MAX_SEGS; j++) {
+      const d = Math.hypot(bubbles[j].x-bubbles[i].x, bubbles[j].y-bubbles[i].y);
+      if(d < 210) {
+        const li = n*6;
+        segPos[li]  =bubbles[i].x; segPos[li+1]=bubbles[i].y; segPos[li+2]=-12;
+        segPos[li+3]=bubbles[j].x; segPos[li+4]=bubbles[j].y; segPos[li+5]=-12;
+        n++;
+      }
+    }
+  }
+  segGeo.setDrawRange(0, n*2);
+  segGeo.attributes.position.needsUpdate = true;
+  segMat.opacity = n > 0 ? .05 + n*.0015 : 0;
+}
+
+// ── INIT BUBBLES ──────────────────────────────────────────────────────────────
+const bubbles = DOCS.map((d,i) => new Bubble(d,i));
+
+// ── FOCUS SYSTEM ─────────────────────────────────────────────────────────────
+let focusIdx = 0;
+
+function setFocus(idx) {
+  bubbles[focusIdx].setFocused(false);
+  focusIdx = idx;
+  bubbles[idx].setFocused(true);
+  updateCard(DOCS[idx]);
+  updateDots(idx);
+}
+
+// ── UI ────────────────────────────────────────────────────────────────────────
+function drawMiniAvatar(doc, el) {
+  el.innerHTML = '';
+  const c = document.createElement('canvas');
+  c.width = c.height = 100;
+  const ctx = c.getContext('2d'), half = 50;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(half,half,half-1,0,Math.PI*2); ctx.clip();
+  const bg = ctx.createLinearGradient(0,0,100,100);
+  bg.addColorStop(0,doc.c1); bg.addColorStop(1,doc.c2);
+  ctx.fillStyle=bg; ctx.fillRect(0,0,100,100);
+  const sh=ctx.createRadialGradient(34,28,0,half,half,half);
+  sh.addColorStop(0,'rgba(255,255,255,.28)'); sh.addColorStop(1,'rgba(0,0,0,.16)');
+  ctx.fillStyle=sh; ctx.fillRect(0,0,100,100);
+  ctx.fillStyle='rgba(255,255,255,.95)';
+  ctx.font='700 28px Inter,-apple-system,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(doc.name.split(' ').slice(1).map(n=>n[0]).join(''), half, half);
+  ctx.restore();
+  c.style.cssText='width:50px;height:50px;border-radius:50%;display:block';
+  el.appendChild(c);
+}
+
+function updateCard(doc) {
+  const card = document.getElementById('doc-card');
+  card.style.opacity='0';
+  setTimeout(()=>{
+    document.getElementById('card-name').textContent = doc.name;
+    const sp = document.getElementById('card-spec');
+    sp.textContent = doc.spec;
+    sp.style.background   = doc.c1 + '18';
+    sp.style.color        = doc.c1;
+    sp.style.borderColor  = doc.c1 + '40';
+    document.getElementById('card-wait').textContent = doc.wait;
+    document.getElementById('card-rev').textContent  = doc.rev + ' reviews';
+    document.getElementById('card-exp').textContent  = doc.exp;
+    drawMiniAvatar(doc, document.getElementById('card-av'));
+    card.style.opacity='1';
+  }, 220);
+}
+
+function buildDots() {
+  const wrap = document.getElementById('dots');
+  DOCS.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' on':'');
+    d.style.cursor='pointer'; d.style.pointerEvents='all';
+    d.addEventListener('click', () => { clearInterval(timer); setFocus(i); restartTimer(); });
+    wrap.appendChild(d);
+  });
+}
+
+function updateDots(idx) {
+  document.querySelectorAll('#dots .dot').forEach((d,i)=>d.classList.toggle('on',i===idx));
+}
+
+buildDots();
+bubbles[0].setFocused(true);
+updateCard(DOCS[0]);
+
+// ── AUTO-SWITCH ───────────────────────────────────────────────────────────────
+let timer = setInterval(()=>setFocus((focusIdx+1)%DOCS.length), 3000);
+function restartTimer(){ timer = setInterval(()=>setFocus((focusIdx+1)%DOCS.length), 3000); }
+
+// ── INTERACTION ───────────────────────────────────────────────────────────────
+let hovIdx = -1;
+const cg = document.getElementById('cg');
+
+renderer.domElement.addEventListener('mousemove', e => {
+  cg.style.left=e.clientX+'px'; cg.style.top=e.clientY+'px'; cg.style.opacity='1';
+  const wx=e.clientX-W/2, wy=-(e.clientY-H/2);
+  let found=-1;
+  for(let i=0;i<bubbles.length;i++){
+    const b=bubbles[i];
+    if(Math.hypot(wx-b.x,wy-b.y) < CP.szSm*b.scale*b.sf*.72){ found=i; break; }
+  }
+  if(found!==hovIdx){
+    if(hovIdx>=0 && !bubbles[hovIdx].focused) bubbles[hovIdx].tHover=0;
+    hovIdx=found;
+    if(found>=0 && !bubbles[found].focused) bubbles[found].tHover=1;
+    renderer.domElement.style.cursor = found>=0 ? 'pointer' : 'default';
+  }
+});
+renderer.domElement.addEventListener('mouseleave', ()=>{
+  cg.style.opacity='0';
+  if(hovIdx>=0 && !bubbles[hovIdx].focused) bubbles[hovIdx].tHover=0;
+  hovIdx=-1;
+});
+renderer.domElement.addEventListener('click', e=>{
+  const wx=e.clientX-W/2, wy=-(e.clientY-H/2);
+  for(let i=0;i<bubbles.length;i++){
+    const b=bubbles[i];
+    if(Math.hypot(wx-b.x,wy-b.y) < CP.szSm*b.scale*b.sf*.78){
+      clearInterval(timer); setFocus(i); restartTimer(); break;
+    }
+  }
+});
+// Touch: tap a bubble
+renderer.domElement.addEventListener('touchend', e=>{
+  const t=e.changedTouches[0];
+  const wx=t.clientX-W/2, wy=-(t.clientY-H/2);
+  for(let i=0;i<bubbles.length;i++){
+    const b=bubbles[i];
+    if(Math.hypot(wx-b.x,wy-b.y) < CP.szSm*b.scale*b.sf*.95){
+      clearInterval(timer); setFocus(i); restartTimer(); break;
+    }
+  }
+});
+
+document.querySelectorAll('.pill').forEach(p=>{
+  p.addEventListener('click',()=>{
+    document.querySelectorAll('.pill').forEach(pp=>pp.classList.remove('on'));
+    p.classList.add('on');
+  });
+});
+
+// ── ANIMATION LOOP ────────────────────────────────────────────────────────────
+const clock = new THREE.Clock();
+
+(function loop() {
+  requestAnimationFrame(loop);
+  const t = clock.getElapsedTime();
+  const fb = bubbles[focusIdx]; // focused bubble
+
+  // Particles: floating noise + gravity toward doctor bubbles
+  for(let i=0; i<PC; i++) {
+    const n = pNoise[i];
+    let gx=0, gy=0;
+
+    // Gravity from every bubble; focused one pulls more strongly
+    for(let j=0; j<bubbles.length; j++) {
+      const b  = bubbles[j];
+      const dx = b.x - pPos[i*3];
+      const dy = b.y - pPos[i*3+1];
+      const d  = Math.hypot(dx,dy);
+      if(d > 28 && d < 300) {
+        const str = b.focused ? 1.4 : 0.28;
+        const f   = str / (d*d + 350);
+        gx += dx * f;
+        gy += dy * f;
+      }
+    }
+
+    pVel[i*2]   = (pVel[i*2]   + gx + Math.sin(t*n.fr+n.ph)*n.am*.005) * .965;
+    pVel[i*2+1] = (pVel[i*2+1] + gy + Math.cos(t*n.fr+n.ph2)*n.am*.005) * .965;
+
+    pPos[i*3]   += pVel[i*2];
+    pPos[i*3+1] += pVel[i*2+1];
+
+    // Soft boundary wrap
+    if(pPos[i*3]   >  W*.88) pPos[i*3]   = -W*.88;
+    if(pPos[i*3]   < -W*.88) pPos[i*3]   =  W*.88;
+    if(pPos[i*3+1] >  H*.88) pPos[i*3+1] = -H*.88;
+    if(pPos[i*3+1] < -H*.88) pPos[i*3+1] =  H*.88;
+  }
+  pGeo.attributes.position.needsUpdate = true;
+
+  // Update bubbles
+  bubbles.forEach(b => b.update(t, fb));
+
+  // Update constellation lines
+  updateLines();
+
+  renderer.render(scene, cam);
+})();
+
+// ── RESIZE ────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', ()=>{
+  W = window.innerWidth; H = window.innerHeight;
+  CP = clusterParams();
+
+  bubbles.forEach((b,i) => {
+    if(b.focused) {
+      b.tx = CP.cx; b.ty = CP.cy;
+      b.tScale = CP.szLg / (CP.szSm * b.sf);
+    } else {
+      const hp = homePos(i, DOCS.length, CP);
+      b.tx = hp.x; b.ty = hp.y;
+    }
+  });
+
+  cam.left=-W/2; cam.right=W/2; cam.top=H/2; cam.bottom=-H/2;
+  cam.updateProjectionMatrix();
+  renderer.setSize(W,H);
+});
+</script>
+</body>
+</html>
